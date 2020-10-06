@@ -1,8 +1,6 @@
 <?php
 /**
- * Template part for displaying page content in page.php
- *
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
+ * Template part for displaying page content in page-home.php
  *
  * @package softech_theme
  */
@@ -18,14 +16,7 @@
 
 	<div class="entry-content">
 		<?php
-		the_content();
-
-		wp_link_pages(
-			array(
-				'before' => '<div class="page-links">' . esc_html__( 'Pages:', 'softech_theme' ),
-				'after'  => '</div>',
-			)
-		);
+			the_content();
 		?>
 	</div><!-- .entry-content -->
 

@@ -23,7 +23,8 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <div id="page" class="site">
-	<a class="skip-link screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'softech_theme' ); ?></a>
+
+
 
 	<header id="masthead" class="site-header">
 		<div class="site-branding">
@@ -37,16 +38,10 @@
 				?>
 				<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
 				<?php
-			endif;
-			$softech_theme_description = get_bloginfo( 'description', 'display' );
-			if ( $softech_theme_description || is_customize_preview() ) :
-				?>
-				<p class="site-description"><?php echo $softech_theme_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
-			<?php endif; ?>
+			endif; ?>
 		</div><!-- .site-branding -->
 
 		<nav id="site-navigation" class="main-navigation">
-			<button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false"><?php esc_html_e( 'Primary Menu', 'softech_theme' ); ?></button>
 			<?php
 			wp_nav_menu(
 				array(

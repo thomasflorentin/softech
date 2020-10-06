@@ -140,7 +140,7 @@ add_action( 'widgets_init', 'softech_theme_widgets_init' );
  * Enqueue scripts and styles.
  */
 function softech_theme_scripts() {
-	wp_enqueue_style( 'softech_theme-style', get_template_directory_uri() . 'main.css', array(), _S_VERSION );
+	wp_enqueue_style( 'softech_theme-style', get_template_directory_uri() . '/main.css', array(), _S_VERSION );
 	wp_style_add_data( 'softech_theme-style', 'rtl', 'replace' );
 
 	wp_enqueue_script( 'softech_theme-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
