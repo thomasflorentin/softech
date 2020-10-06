@@ -3,3 +3,5 @@
 /htdocs/wp-config.php
 /softech.code-workspace
 /htdocs/.htaccess
+/htdocs/gulpfile.js
+/htdocs/node_modules
