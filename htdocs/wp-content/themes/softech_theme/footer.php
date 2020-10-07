@@ -11,21 +11,63 @@
 
 ?>
 
-	<footer id="colophon" class="site-footer">
-		<div class="site-info">
-			<a href="<?php echo esc_url( __( 'https://wordpress.org/', 'softech_theme' ) ); ?>">
-				<?php
-				/* translators: %s: CMS name, i.e. WordPress. */
-				printf( esc_html__( 'Proudly powered by %s', 'softech_theme' ), 'WordPress' );
-				?>
-			</a>
-			<span class="sep"> | </span>
-				<?php
-				/* translators: 1: Theme name, 2: Theme author. */
-				printf( esc_html__( 'Theme: %1$s by %2$s.', 'softech_theme' ), 'softech_theme', '<a href="http://underscores.me/">Thomas Florentin</a>' );
-				?>
-		</div><!-- .site-info -->
+	</div><!-- .page_upper -->
+
+	<footer id="colophon" class="">
+		<div class="site-footer">
+			<div class="flex wrap">
+
+				<div class="footer_item footer_about">
+					<h3 class="h_3 footer_title">A propos</h3>
+					<?php
+						$image = get_field('website_logo', 'options');
+
+						$size = 'large'; // (thumbnail, medium, large, full or custom size)
+						if( $image ) {
+							echo wp_get_attachment_image( $image['id'], $size );
+						} ?>
+					<p>
+						<?php echo bloginfo('description'); ?>
+					</p>
+				</div>
+
+				<div class="footer_item footer_about">
+					<h3 class="h_3 footer_title">Nos derniers chantiers</h3>
+					<div>
+					
+					</div>
+				</div>
+
+				<div class="footer_item footer_about">
+					<h3 class="h_3 footer_title">Informations</h3>
+					<div>
+						<ul class="">
+							<li>Nos prestations</li>
+							<li>A propos</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="footer_item footer_about">
+					<h3 class="h_3 footer_title">Contacts</h3>
+					<div>
+					
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+		<div class="site-subfooter">
+			<div class="site-info wrap">
+				<span>© Softech - Tous droits réservés</span>
+			</div><!-- .site-info -->
+		</div>
+
 	</footer><!-- #colophon -->
+
+
 </div><!-- #page -->
 
 <?php wp_footer(); ?>

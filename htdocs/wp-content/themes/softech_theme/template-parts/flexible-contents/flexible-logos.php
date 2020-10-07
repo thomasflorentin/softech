@@ -10,8 +10,8 @@ $size = 'full'; // (thumbnail, medium, large, full or custom size)
 <section class="section logos">
     <div class="section_inner wrap">
     
-        <div class="section_title">
-            <h2 class="txt-ctr"><?php echo $title; ?></h2>
+        <div class="">
+            <h2 class="txt-ctr section_title"><?php echo $title; ?></h2>
         </div>
 
         <div class="section_logos">

@@ -8,8 +8,13 @@
 <section class="section widepanel">
     <div class="section_inner">
 
-        <div class="wrap  ">
-            <h2 class="section_title"><?php echo $title; ?></h2>
+        <div class="wrap ">
+            <div class="section_content">
+                <h2 class="section_title"><?php echo $title; ?></h2>
+                <div class="">
+                    cioehfhehf 
+                </div>     
+            </div>
         </div>
 
         <div class="section_cover">

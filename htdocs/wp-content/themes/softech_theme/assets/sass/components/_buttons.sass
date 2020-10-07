@@ -4,7 +4,14 @@ a
     text-decoration: none
     transition: all .2s
 
+.link_block
+    display: block
+    &:hover
+        img
+            box-shadow: 0px 0px 5px $gray
+
 .btn
+    display: inline-block
     background-color: $green
     color: white
     text-transform: uppercase
@@ -13,3 +20,11 @@ a
 
     &:hover
         background-color: $blue
+
+.btn--white
+    @extend .btn
+    background-color: white
+    color: $blue
+
+    &:hover
+        color: white

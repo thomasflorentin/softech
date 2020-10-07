@@ -16,7 +16,9 @@
 			elseif( get_row_layout() == 'flexible_news' ): 
 				get_template_part('template-parts/flexible-contents/flexible', 'news');
 
-
+			elseif( get_row_layout() == 'flexible_services' ): 
+				get_template_part('template-parts/flexible-contents/flexible', 'services');
+	
 			endif;
 
 		endwhile;
