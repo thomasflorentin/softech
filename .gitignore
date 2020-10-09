@@ -5,4 +5,5 @@
 /htdocs/.htaccess
 /htdocs/gulpfile.js
 /htdocs/node_modules
+/htdocs/wp-content/uploads
 /htdocs/package-lock.json
