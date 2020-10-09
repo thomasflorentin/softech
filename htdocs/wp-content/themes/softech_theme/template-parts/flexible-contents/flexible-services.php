@@ -1,7 +1,11 @@
 <?php
     // VARIABLES
-    $title = get_sub_field('section_title');
-    $services = get_sub_field('section_pages');
+    if( !$title ) {
+        $title = get_sub_field('section_title');
+    }
+    if( !$services ) {
+        $services = get_sub_field('section_pages');
+    }
 ?>
 
 <section class="section services">
