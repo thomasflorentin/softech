@@ -7,3 +7,5 @@
 /htdocs/node_modules
 /htdocs/wp-content/uploads
 /htdocs/package-lock.json
+/htdocs/wp-content/updraft
+/htdocs/wp-content/updraft/binziptest/subdir1/subdir2/test.html
