@@ -14,7 +14,14 @@
                 <h2 class="section_title"><?php echo $title; ?></h2>
                 <div class="">
                     <?php echo $intro; ?> 
-                </div>     
+                </div>
+                <?php if( get_sub_field('section_btnlabel') != '' ) : ?>
+                    <div class="section_action">
+                        <a href="<?php the_sub_field('section_link'); ?>" class="btn--yellow">
+                            <?php the_sub_field('section_btnlabel'); ?>
+                        </a>
+                    </div>
+                <?php endif; ?> 
             </div>
         </div>
 

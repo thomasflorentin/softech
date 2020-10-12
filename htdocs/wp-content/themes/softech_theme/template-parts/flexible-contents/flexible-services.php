@@ -1,9 +1,15 @@
 <?php
     // VARIABLES
-    if( !$title ) {
+    if( isset($title) ) {
+        if( $title === '' ) {
+            $title = get_sub_field('section_title');
+        }
+    }
+    else {
         $title = get_sub_field('section_title');
     }
-    if( !$services ) {
+    
+    if( !isset($services) ) {
         $services = get_sub_field('section_pages');
     }
 ?>

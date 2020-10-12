@@ -67,7 +67,7 @@
 				</div>
 
 				<div class="header_action">
-					<a href="/contact" class="btn">Demander un devis</a>
+					<a href="/contact" class="btn--yellow">Demander un devis</a>
 				</div>
 			</div><!-- .site-branding -->
 
