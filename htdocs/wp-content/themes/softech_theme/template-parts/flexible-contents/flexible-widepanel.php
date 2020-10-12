@@ -1,6 +1,7 @@
 <?php
     // VARIABLES
     $title = get_sub_field('section_title');
+    $intro = get_sub_field('section_intro');
     $image = get_sub_field('section_image');
 
 ?>
@@ -12,7 +13,7 @@
             <div class="section_content">
                 <h2 class="section_title"><?php echo $title; ?></h2>
                 <div class="">
-                    cioehfhehf 
+                    <?php echo $intro; ?> 
                 </div>     
             </div>
         </div>

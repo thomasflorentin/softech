@@ -31,10 +31,13 @@
                             </div>
                             <h2 class="h_2 news_title"><?php the_title(); ?></h2>
                             <div>
-                                <span class="ft_1">Client :</span> <span class="ft_1 green"><?php echo 'untel'; ?></span>
+                                <span class="ft_1">Client :</span> <span class="ft_1 blue"><?php the_field('chantier_client'); ?></span>
                             </div>
                             <div>
-                                <span class="ft_1">Lieu : </span> <span class="ft_1 green"><?php echo 'untel'; ?></span>
+                                <span class="ft_1">Lieu : </span> <span class="ft_1 blue"><?php the_field('chantier_lieu'); ?></span>
+                            </div>
+                            <div>
+                                <span class="ft_1">Date :</span> <span class="ft_1 blue"><?php the_field('chantier_date'); ?></span>
                             </div>
                         </a>
                     </div>

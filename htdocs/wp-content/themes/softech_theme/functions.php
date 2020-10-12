@@ -180,8 +180,13 @@ if ( defined( 'JETPACK__VERSION' ) ) {
 /**
  * Adding Support for page.
  */
-add_action ('init', 'emw_add_excerpt_support');
+add_action ('init', 'softech_add_support');
  
-function emw_add_excerpt_support () {
+function softech_add_support () {
+	add_theme_support( 'editor-styles' );
+	
     add_post_type_support('page', 'excerpt');
+	register_taxonomy_for_object_type('category', 'page');  
+	
+	add_post_type_support('post', array('excerpt') );
 }

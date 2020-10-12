@@ -32,15 +32,25 @@
 
     .section_cover
         width: 100%
+        position: relative
+        &:after 
+            content: ''
+            position: absolute
+            top: 0
+            left: 0
+            right: 0
+            bottom: 0
+            backgroud-color: rgba(0,0,0,.2)
 
     img
         width: 100%
         height: 500px
-        height: 40vh
+        height: 50vh
         object-fit: cover
 
     .section_title
         color: white
+        font-size: 3rem
         &:before 
             display: none
     
@@ -48,8 +58,9 @@
         position: absolute
         top: 20px
         color: white
-        background-color: rgba(0,0,0,0.2)
-        padding: 2px 5px
+        padding-left: 20px
+        border-left: 5px solid $yellow
+
 
 
 
@@ -100,6 +111,8 @@
         flex: 0 0 25%
         width: 25%
         padding: 10px
+        .news_title
+            margin-bottom: 25px
         
     .card_cover
         margin-bottom: 20px

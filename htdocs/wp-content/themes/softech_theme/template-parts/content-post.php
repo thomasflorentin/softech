@@ -40,16 +40,16 @@
 				<div class="entry-meta mb-2">
 					<h3 class="mb-1">Le Chantier</h3>
 					<div>
-						<span class="ft_1">Date :</span> <span class="ft_1 green"><?php echo '2012'; ?></span>
+						<span class="ft_1">Date :</span> <span class="ft_1 blue"><?php the_field('chantier_date'); ?></span>
                     </div>
 					<div>
-						<span class="ft_1">Client :</span> <span class="ft_1 green"><?php echo 'untel'; ?></span>
+						<span class="ft_1">Client :</span> <span class="ft_1 blue"><?php the_field('chantier_client'); ?></span>
                     </div>
                     <div>
-                        <span class="ft_1">Lieu : </span> <span class="ft_1 green"><?php echo 'untel'; ?></span>
+                        <span class="ft_1">Lieu : </span> <span class="ft_1 blue"><?php the_field('chantier_lieu'); ?></span>
                     </div>			
                     <div>
-                        <span class="ft_1">Prestations : <br> </span> <span class="ft_1 green"><?php echo 'Aérogommage sur bois'; ?></span>
+                        <span class="ft_1">Prestations : <br> </span> <span class="ft_1 blue"><?php echo get_the_category_list(); ?></span>
                     </div>	
 				</div>
 

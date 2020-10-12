@@ -26,9 +26,7 @@ define('PLUGIN_ACF_PATH', PLUGIN_PATH . 'acf/');
 define('PLUGIN_UTILS_PATH', PLUGIN_PATH . 'utils/');
 
 
-/**
- * DEFINE SOCIAL ACCOMPTS
- */
+require_once(PLUGIN_UTILS_PATH . 'front.php');
 
 
 

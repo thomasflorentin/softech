@@ -31,29 +31,8 @@
 					</p>
 				</div>
 
-				<div class="footer_item footer_about">
-					<h3 class="h_3 footer_title">Nos derniers chantiers</h3>
-					<div>
-					
-					</div>
-				</div>
+				<?php get_sidebar(); ?>
 
-				<div class="footer_item footer_about">
-					<h3 class="h_3 footer_title">Informations</h3>
-					<div>
-						<ul class="">
-							<li>Nos prestations</li>
-							<li>A propos</li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="footer_item footer_about">
-					<h3 class="h_3 footer_title">Contacts</h3>
-					<div>
-					
-					</div>
-				</div>
 
 			</div>
 		</div>
