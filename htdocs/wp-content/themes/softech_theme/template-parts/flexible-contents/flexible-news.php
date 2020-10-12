@@ -24,7 +24,7 @@
 
                     <div class="news_card">
                         <a href="<?php the_permalink(); ?>" class="link_block">
-                            <div class="card_cover ratio_1_1">
+                            <div class="card_cover ratio_2_3">
                                 <div class="ratio_inner">
                                     <?php the_post_thumbnail(); ?>
                                 </div>
