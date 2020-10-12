@@ -16,9 +16,10 @@ input[type="submit"]
     background-color: $green
     color: white
     text-transform: uppercase
-    padding: 10px 20px
+    padding: 15px 30px
     font-size: .9rem
     border: none
+    font-weight: 700
 
     &:hover
         background-color: $blue
@@ -35,4 +36,10 @@ input[type="submit"]
 .btn--yellow
     @extend .btn
     background-color: $yellow
+
+    &:after
+        content: ' >'
+        font-weight: 400
+        font-size: .8
+        padding-left: 10px
 
