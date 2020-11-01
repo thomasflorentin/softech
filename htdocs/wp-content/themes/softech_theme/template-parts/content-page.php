@@ -33,13 +33,13 @@ switch ($level) {
 		break;
 
 	case 1:
-		$ariane = '<a class="entry-title" href="' . $root_title_url . '">' . $root_title .'</a> <h1 class="entry-title">' . get_the_title() . '</h1>';
+		$ariane = '<div class="entry-title"><a class="" href="' . $root_title_url . '">' . $root_title .'</a> <h1 class="">' . get_the_title() . '</h1></div>';
 		break;
 	
 	case 2:
 		$level1_title = get_the_title($ancestors[0]) . ' < ';
 		$level1_title_url = get_permalink($ancestors[0]);	
-		$ariane = '<a class="root-title" href="' . $root_title_url . '">' . $root_title .'</a> <span class="level1-title">' . $level1_title . '</span><h1 class="entry-title">' . get_the_title() . '</h1>';
+		$ariane = '<div class="entry-title"><a class="root-title" href="' . $root_title_url . '">' . $root_title .'</a> <span class="level1-title">' . $level1_title . '</span><h1 class="entry-title">' . get_the_title() . '</h1></div>';
 		break;
 
 	default:
@@ -53,6 +53,9 @@ $page_service = get_field('is_service');
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
 	<header class="entry-header">
+		<div class="cover">
+			<?php the_post_thumbnail(); ?>
+		</div>
 		<div class="wrap">
 			<?php echo $ariane; ?>
 		</div>
@@ -68,7 +71,9 @@ $page_service = get_field('is_service');
 					<?php the_excerpt(); ?>
 				</div>
 
-				<?php the_content(); ?>
+				<div class="mb-4">
+					<?php the_content(); ?>
+				</div>
 
 
 				<div class="">
@@ -102,12 +107,12 @@ $page_service = get_field('is_service');
 							
 								<h3 class="h_3 mb-1">Nos compétences </h3>
 								<ul class="">
-								<?php foreach ( $children as $child ) : ?>
+								<?php foreach ( $children as $page ) : ?>
 									
 									<li>
-										<a href="<?php echo get_the_permalink($child->ID); ?>" class="link_block">
-										<?php echo $child->post_title; ?>
-										</a>
+									<?php 
+										set_query_var('page', $page);
+										get_template_part( 'template-parts/blocks/block', 'service' ); ?>
 									</li>
 								<?php endforeach; ?>
 								</ul>
@@ -134,9 +139,9 @@ $page_service = get_field('is_service');
 								<ul class="">
 								<?php foreach ( $siblings as $page ) : ?>
 									<li>
-										<a href="<?php echo get_the_permalink($page->ID); ?>" class="link_block">
-										<?php echo $page->post_title; ?>
-										</a>
+										<?php 
+											set_query_var('page', $page);
+											get_template_part( 'template-parts/blocks/block', 'service' ); ?>
 									</li>
 								<?php endforeach; ?>
 								</ul>
@@ -166,9 +171,9 @@ $page_service = get_field('is_service');
 							<ul class="">
 							<?php foreach ( $services_pages as $page ) : ?>
 								<li>
-									<a href="<?php echo get_the_permalink($page->ID); ?>" class="link_block">
-									<?php echo $page->post_title; ?>
-									</a>
+									<?php 
+										set_query_var('page', $page);
+										get_template_part( 'template-parts/blocks/block', 'service' ); ?>
 								</li>
 							<?php endforeach; ?>
 							</ul>
