@@ -61,35 +61,19 @@ $page_service = get_field('is_service');
 		</div>
 	</header><!-- .entry-header -->
 
-	<div class="wrap">
+	<div class="">
 
-		<div class="page_content flex">
+		<div class="page_content">
 
 			<main class="entry-content">
 				
-				<div class="entry-excerpt">
+				<div class="entry-excerpt mb-4 wrap">
 					<?php the_excerpt(); ?>
 				</div>
 
-				<div class="mb-4">
-					<?php the_content(); ?>
-				</div>
 
+				<div class="entry-rebonds mb-4">
 
-				<div class="">
-				
-					<?php 
-						if( $page_service ) {
-							get_related_news(); 
-						}
-					?>
-				
-				</div>
-
-
-			</main>
-
-			<aside>
 				<?php 
 					if( $page_service ) {
 
@@ -105,17 +89,20 @@ $page_service = get_field('is_service');
 						if ( $children ) : ?>
 							<div class="services_list">
 							
-								<h3 class="h_3 mb-1">Nos compétences </h3>
-								<ul class="">
-								<?php foreach ( $children as $page ) : ?>
+								<div class="txt-ctr mb-2">
+									<h2 class="section_title">Nos compétences</h2>
+								</div>
+
+								<div class="wrap flex section_cards ">
+								<?php foreach ( $children as $post ) : ?>
 									
-									<li>
 									<?php 
-										set_query_var('page', $page);
-										get_template_part( 'template-parts/blocks/block', 'service' ); ?>
-									</li>
+                    					setup_postdata($post);
+										get_template_part( 'template-parts/blocks/block', 'service--extended' ); ?>
+
 								<?php endforeach; ?>
-								</ul>
+								<?php wp_reset_postdata(); ?>
+								</div>
 							</div>
 
 						<?php else : ?>
@@ -133,19 +120,24 @@ $page_service = get_field('is_service');
 
 							?>
 
-							<div class="services_list">
-							
-								<h3 class="h_3 mb-1">Voir aussi </h3>
-								<ul class="">
-								<?php foreach ( $siblings as $page ) : ?>
-									<li>
-										<?php 
-											set_query_var('page', $page);
-											get_template_part( 'template-parts/blocks/block', 'service' ); ?>
-									</li>
+							<div class="services_list">		
+								
+								<div class="txt-ctr mb-2">
+									<h2 class="section_title">Voir aussi</h2>
+								</div>
+
+								<div class="wrap flex section_cards">
+								<?php foreach ( $siblings as $post ) : ?>
+									
+									<?php 
+										setup_postdata($post);
+										get_template_part( 'template-parts/blocks/block', 'service--extended' ); ?>
+
 								<?php endforeach; ?>
-								</ul>
+								<?php wp_reset_postdata(); ?>
+								</div>
 							</div>
+
 
 						<?php endif; ?>
 				<?php }
@@ -165,10 +157,10 @@ $page_service = get_field('is_service');
 
 					?>
 
-						<div class="services_list">
+						<div class="services_list wrap">
 							
 							<h3 class="h_3 mb-1">Nos services </h3>
-							<ul class="">
+							<div class="wrap flex">
 							<?php foreach ( $services_pages as $page ) : ?>
 								<li>
 									<?php 
@@ -176,12 +168,37 @@ $page_service = get_field('is_service');
 										get_template_part( 'template-parts/blocks/block', 'service' ); ?>
 								</li>
 							<?php endforeach; ?>
-							</ul>
+							</div>
 						</div>
 
 
 				<?php } ?>
+				
+				</div>
 
+
+				<div class="entry-contenttext mb-4 wrap">
+					<?php the_content(); ?>
+				</div>
+
+
+				<div class="entry-news">
+				
+					<div class="wrap">
+								
+						<?php 
+							if( $page_service ) {
+								get_related_news(); 
+							}
+						?>
+					</div>
+
+				</div>
+
+
+			</main>
+
+			<aside>
 
 				<div class="block_contact">
 					<p>Vous avez une question ? </p>	

@@ -190,3 +190,8 @@ function softech_add_support () {
 	
 	add_post_type_support('post', array('excerpt') );
 }
+
+function mytheme_custom_excerpt_length( $length ) {
+    return 20;
+}
+add_filter( 'excerpt_length', 'mytheme_custom_excerpt_length', 999 );

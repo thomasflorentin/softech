@@ -21,27 +21,15 @@
             <h2 class="section_title"><?php echo $title; ?></h2>
         </div>
 
-        <div class="section_cards flex wrap">
+        <div class="section_cards--half flex wrap">
 
             <?php if( $services ): ?>
                 <?php foreach( $services as $post ): ?>
 
                     <?php setup_postdata($post); ?>
 
-
-                    <div class="service_card">
-                        <a href="<?php the_permalink(); ?>" class="link_block">
-                            <div class="card_cover ratio_1_2">
-                                <div class="ratio_inner">
-                                    <?php the_post_thumbnail(); ?>
-                                </div>
-                            </div>
-                            <h2 class="h_21 service_title txt-ctr"><?php the_title(); ?></h2>
-                            <div>
-                                <?php the_excerpt(); ?>
-                            </div>
-                        </a>
-                    </div>
+                    <?php 
+                        get_template_part( 'template-parts/blocks/block', 'service--extended' ); ?>
 
                 <?php endforeach; ?>
                 <?php wp_reset_postdata(); ?>
