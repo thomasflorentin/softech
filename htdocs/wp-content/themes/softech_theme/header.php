@@ -48,7 +48,7 @@
 						<span class="icon">
 							<svg class="" xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><title></title><g id="icomoon-ignore"> </g><path d="M448 96h128v64h-128v-64zM256 1024h512c52.928 0 96-43.072 96-96v-832c0-52.928-43.072-96-96-96h-512c-52.928 0-96 43.072-96 96v832c0 52.928 43.072 96 96 96zM224 96c0-17.632 14.336-32 32-32h512c17.664 0 32 14.368 32 32v96h-576v-96zM224 256h576v448h-576v-448zM800 768v160c0 17.632-14.336 32-32 32h-512c-17.664 0-32-14.368-32-32v-160h576z"></path></svg>
 						</span>
-						<span class="ft_1">CUSTOM SUPPORT & SALE</span>
+						<span class="ft_1">Contact</span>
 					</div>
 
 					<div>

@@ -25,7 +25,7 @@ function get_related_news() {
     $args = array(
         'category__in' => $cat_ids,
         'post_type' => 'post',
-        'posts_per_page' => '4',
+        'posts_per_page' => '3',
         'post__not_in' => array( $post_id )
     );
 
@@ -42,7 +42,7 @@ function get_related_news() {
             <h2 class="section_title">Nos chantiers</h2>
         </div>
 
-        <div class="section_cards--half flex">
+        <div class="section_cards--third flex">
 
             <?php while ( $the_query->have_posts() ) : ?>
                 <?php $the_query->the_post(); ?>

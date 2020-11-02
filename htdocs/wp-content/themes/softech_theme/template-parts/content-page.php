@@ -67,12 +67,14 @@ $page_service = get_field('is_service');
 
 			<main class="entry-content">
 				
-				<div class="entry-excerpt mb-4 wrap">
+				<div class="entry-excerpt mb-2 wrap">
 					<?php the_excerpt(); ?>
 				</div>
 
+				<div class="entry-contenttext mb-4 wrap">
+					<?php the_content(); ?>
+				</div>
 
-				<div class="entry-rebonds mb-4">
 
 				<?php 
 					if( $page_service ) {
@@ -87,100 +89,71 @@ $page_service = get_field('is_service');
 						$children = get_children( $args );
 					 
 						if ( $children ) : ?>
-							<div class="services_list">
-							
-								<div class="txt-ctr mb-2">
-									<h2 class="section_title">Nos compétences</h2>
-								</div>
+							<div class="entry-rebonds mb-4">
 
-								<div class="wrap flex section_cards ">
-								<?php foreach ( $children as $post ) : ?>
-									
-									<?php 
-                    					setup_postdata($post);
-										get_template_part( 'template-parts/blocks/block', 'service--extended' ); ?>
+								<div class="services_list">
+								
+									<div class="txt-ctr mb-2">
+										<h2 class="section_title">Nos compétences</h2>
+									</div>
 
-								<?php endforeach; ?>
-								<?php wp_reset_postdata(); ?>
+									<div class="widewrapper flex section_cards ">
+									<?php foreach ( $children as $post ) : ?>
+										
+										<?php 
+											setup_postdata($post);
+											get_template_part( 'template-parts/blocks/block', 'service--extended' ); ?>
+
+									<?php endforeach; ?>
+									<?php wp_reset_postdata(); ?>
+									</div>
 								</div>
 							</div>
 
 						<?php else : ?>
 
 							<?php 
-							$siblings_args = array(
-								'posts_per_page' 	=> -1,
-								'order'          	=> 'ASC',
-								'post_parent'    	=> $post->post_parent,
-								'post_type'      	=> 'page',
-								'exclude' 		 	=> $post->ID
-							);
-						
-							$siblings = get_children( $siblings_args );
+							if( $post->post_parent ) {
 
-							?>
 
-							<div class="services_list">		
-								
-								<div class="txt-ctr mb-2">
-									<h2 class="section_title">Voir aussi</h2>
+
+								$siblings_args = array(
+									'posts_per_page' 	=> -1,
+									'order'          	=> 'ASC',
+									'post_parent'    	=> $post->post_parent,
+									'post_type'      	=> 'page',
+									'exclude' 		 	=> $post->ID
+								);
+							
+								$siblings = get_children( $siblings_args ); ?>
+								<div class="entry-rebonds mb-4">
+
+									<div class="services_list">		
+										
+										<div class="txt-ctr mb-2">
+											<h2 class="section_title">Voir aussi</h2>
+										</div>
+
+										<div class="widewrapper flex section_cards">
+										<?php foreach ( $siblings as $post ) : ?>
+											
+											<?php 
+												setup_postdata($post);
+												get_template_part( 'template-parts/blocks/block', 'service--extended' ); ?>
+
+										<?php endforeach; ?>
+										<?php wp_reset_postdata(); ?>
+										</div>
+									</div>
 								</div>
 
-								<div class="wrap flex section_cards">
-								<?php foreach ( $siblings as $post ) : ?>
-									
-									<?php 
-										setup_postdata($post);
-										get_template_part( 'template-parts/blocks/block', 'service--extended' ); ?>
-
-								<?php endforeach; ?>
-								<?php wp_reset_postdata(); ?>
-								</div>
-							</div>
+							<?php } ?>
 
 
 						<?php endif; ?>
-				<?php }
-				else { 
-				
-				 
-					$services_pages = get_posts( array(
-						'post_type'      	=> 'page',
-						'post_parent'	=> 0,
-						'meta_query' => array(
-							array(
-								'key'   => 'is_service',
-								'value' => '1',
-							)
-						)
-					) );
-
-					?>
-
-						<div class="services_list wrap">
-							
-							<h3 class="h_3 mb-1">Nos services </h3>
-							<div class="wrap flex">
-							<?php foreach ( $services_pages as $page ) : ?>
-								<li>
-									<?php 
-										set_query_var('page', $page);
-										get_template_part( 'template-parts/blocks/block', 'service' ); ?>
-								</li>
-							<?php endforeach; ?>
-							</div>
-						</div>
-
-
 				<?php } ?>
 				
 				</div>
-
-
-				<div class="entry-contenttext mb-4 wrap">
-					<?php the_content(); ?>
-				</div>
-
 
 				<div class="entry-news">
 				
@@ -198,14 +171,16 @@ $page_service = get_field('is_service');
 
 			</main>
 
-			<aside>
+			<aside class="entry-action mb-4">
+				<div class="wrap">
+				
+					<div class="block_contact">
+						<p>Vous avez une question ? </p>	
+						
+						<a href="" class="btn--white">Contactez-nous ! </a>	
+					</div>
 
-				<div class="block_contact">
-					<p>Vous avez une question ? </p>	
-					
-					<a href="" class="btn--white">Contactez-nous ! </a>	
 				</div>
-
 			</aside>
 
 		</div>
