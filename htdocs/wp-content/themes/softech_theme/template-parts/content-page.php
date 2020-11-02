@@ -67,14 +67,17 @@ $page_service = get_field('is_service');
 
 			<main class="entry-content">
 				
-				<div class="entry-excerpt mb-2 wrap">
-					<?php the_excerpt(); ?>
+				<div class="wrap mb-2">
+					<div class="entry-excerpt">
+						<?php the_excerpt(); ?>
+					</div>
 				</div>
-
-				<div class="entry-contenttext mb-4 wrap">
-					<?php the_content(); ?>
+				
+				<div class="wrap mb-4">
+					<div class="entry-contenttext">
+						<?php the_content(); ?>
+					</div>
 				</div>
-
 
 				<?php 
 					if( $page_service ) {
