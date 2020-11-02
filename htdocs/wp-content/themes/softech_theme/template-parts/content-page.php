@@ -175,12 +175,12 @@ $page_service = get_field('is_service');
 			</main>
 
 			<aside class="entry-action mb-4">
-				<div class="widewrapper">
+				<div class="wrap">
 				
 					<div class="block_contact">
-						<p>Vous avez une question ? </p>	
+						<h4 class="block_title">Vous souhaitez nous poser une question ? </h4>	
 						
-						<a href="" class="btn--white">Contactez-nous ! </a>	
+						<a href="" class="btn--white block_btn">Contactez-nous ! </a>	
 					</div>
 
 				</div>

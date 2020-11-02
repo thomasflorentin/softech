@@ -9,13 +9,13 @@
 ?>
 
 <section class="section news">
-    <div class="section_inner">
+    <div class="section_inner widewrapper">
 
-        <div class="wrap txt-ctr ">
+        <div class=" txt-ctr ">
             <h2 class="section_title"><?php echo $title; ?></h2>
         </div>
 
-        <div class="section_cards flex widewrapper">
+        <div class="section_cards flex ">
 
             <?php if ( $the_query->have_posts() ) : ?>
 

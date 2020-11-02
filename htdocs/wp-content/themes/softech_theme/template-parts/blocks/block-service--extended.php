@@ -2,7 +2,7 @@
         
         <a href="<?php the_permalink(); ?>" class="link_block">
             
-            <h2 class="h_21 service_title txt-ctr mb-05">
+            <h2 class="h_4 service_title mb-05">
                 <?php the_title(); ?>
             </h2>
 

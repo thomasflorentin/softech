@@ -31,6 +31,27 @@
 				</div>
 
                 <?php the_content(); ?>
+
+				<div class="gallery">
+					<div>
+						hello
+					</div>
+					<div>
+						hello
+					</div>					<div>
+						hello
+					</div>					<div>
+						hello
+					</div>					<div>
+						hello
+					</div>					<div>
+						hello
+					</div>					<div>
+						hello
+					</div>					<div>
+						hello
+					</div>		
+				</div>
             </main><!-- .entry-content -->
 
 
