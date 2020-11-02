@@ -92,7 +92,7 @@ $page_service = get_field('is_service');
 						$children = get_children( $args );
 					 
 						if ( $children ) : ?>
-							<div class="entry-rebonds mb-4">
+							<div class="entry-rebonds mb-2">
 
 								<div class="services_list">
 								
@@ -100,7 +100,7 @@ $page_service = get_field('is_service');
 										<h2 class="section_title">Nos compétences</h2>
 									</div>
 
-									<div class="widewrapper flex section_cards ">
+									<div class="wrap flex section_cards ">
 									<?php foreach ( $children as $post ) : ?>
 										
 										<?php 
@@ -129,7 +129,7 @@ $page_service = get_field('is_service');
 								);
 							
 								$siblings = get_children( $siblings_args ); ?>
-								<div class="entry-rebonds mb-4">
+								<div class="entry-rebonds mb-2">
 
 									<div class="services_list">		
 										
@@ -137,7 +137,7 @@ $page_service = get_field('is_service');
 											<h2 class="section_title">Voir aussi</h2>
 										</div>
 
-										<div class="widewrapper flex section_cards">
+										<div class="wrap flex section_cards">
 										<?php foreach ( $siblings as $post ) : ?>
 											
 											<?php 
@@ -158,9 +158,9 @@ $page_service = get_field('is_service');
 				
 				</div>
 
-				<div class="entry-news">
+				<div class="entry-news mb-4">
 				
-					<div class="wrap">
+					<div class="widewrapper">
 								
 						<?php 
 							if( $page_service ) {
@@ -175,7 +175,7 @@ $page_service = get_field('is_service');
 			</main>
 
 			<aside class="entry-action mb-4">
-				<div class="wrap">
+				<div class="widewrapper">
 				
 					<div class="block_contact">
 						<p>Vous avez une question ? </p>	
