@@ -12,11 +12,12 @@
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
 	<header class="entry-header">
-		<div class="wrap">
-
-			<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
-
+		<div class="cover">
+			<?php the_post_thumbnail(); ?>
 		</div>
+		<div class="wrap">
+			<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
+		</div>		
 	</header><!-- .entry-header -->
 
 	<div class="wrap">
@@ -28,8 +29,6 @@
 				<div class="entry-excerpt">
 					<?php the_excerpt(); ?>
 				</div>
-
-				<?php softech_theme_post_thumbnail(); ?>
 
                 <?php the_content(); ?>
             </main><!-- .entry-content -->

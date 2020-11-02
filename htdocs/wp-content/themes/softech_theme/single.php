@@ -19,12 +19,13 @@ get_header();
 			get_template_part( 'template-parts/content', get_post_type() ); ?>
 
 
-		<div class="wrap">
+		<div class="wrap mb-4">
 		<?php
 			the_post_navigation(
 				array(
-					'prev_text' => '<span class="nav-subtitle">' . esc_html__( 'Previous:', 'softech_theme' ) . '</span> <span class="nav-title">%title</span>',
-					'next_text' => '<span class="nav-subtitle">' . esc_html__( 'Next:', 'softech_theme' ) . '</span> <span class="nav-title">%title</span>',
+					'screen_reader_text' => __( 'Voir d\'autres chantiers : ' ),
+					'prev_text' => '<span class="nav-subtitle">' . esc_html__( '', 'softech_theme' ) . '</span> <span class="nav-title">%title</span>',
+					'next_text' => '<span class="nav-subtitle">' . esc_html__( '', 'softech_theme' ) . '</span> <span class="nav-title">%title</span>',
 				)
 			); ?>
 		</div>

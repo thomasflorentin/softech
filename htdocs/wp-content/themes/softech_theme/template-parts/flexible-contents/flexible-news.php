@@ -29,7 +29,7 @@
                                     <?php the_post_thumbnail(); ?>
                                 </div>
                             </div>
-                            <h2 class="h_2 news_title"><?php the_title(); ?></h2>
+                            <h2 class="h_4 news_title"><?php the_title(); ?></h2>
                             <div>
                                 <span class="ft_1">Client :</span> <span class="ft_1 blue"><?php the_field('chantier_client'); ?></span>
                             </div>

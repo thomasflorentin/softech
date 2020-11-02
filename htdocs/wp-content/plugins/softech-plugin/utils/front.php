@@ -25,7 +25,7 @@ function get_related_news() {
     $args = array(
         'category__in' => $cat_ids,
         'post_type' => 'post',
-        'posts_per_page' => '3',
+        'posts_per_page' => '-1',
         'post__not_in' => array( $post_id )
     );
 

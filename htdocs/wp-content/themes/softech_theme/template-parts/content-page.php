@@ -94,13 +94,13 @@ $page_service = get_field('is_service');
 						if ( $children ) : ?>
 							<div class="entry-rebonds mb-2">
 
-								<div class="services_list">
+								<div class="services_list wrap">
 								
-									<div class="txt-ctr mb-2">
+									<div class="mb-2">
 										<h2 class="section_title">Nos compétences</h2>
 									</div>
 
-									<div class="wrap flex section_cards ">
+									<div class=" flex section_cards ">
 									<?php foreach ( $children as $post ) : ?>
 										
 										<?php 
