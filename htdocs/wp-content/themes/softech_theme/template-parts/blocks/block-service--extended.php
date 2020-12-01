@@ -8,7 +8,7 @@
 
             <div class="card_cover ratio_1_2 mb-1">
                 <div class="ratio_inner">
-                    <?php the_post_thumbnail(); ?>
+                    <?php the_post_thumbnail('service-thumb'); ?>
                 </div>
             </div>
 

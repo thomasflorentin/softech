@@ -177,6 +177,16 @@ if ( defined( 'JETPACK__VERSION' ) ) {
 }
 
 
+
+add_action( 'after_setup_theme', 'wpdocs_theme_setup' );
+function wpdocs_theme_setup() {
+	add_image_size( 'homepage-thumb', 220, 180, true ); // (cropped)
+	
+	add_image_size( 'service-thumb', 800 );
+
+}
+
+
 /**
  * Adding Support for page.
  */
@@ -189,6 +199,8 @@ function softech_add_support () {
 	register_taxonomy_for_object_type('category', 'page');  
 	
 	add_post_type_support('post', array('excerpt') );
+
+
 }
 
 function mytheme_custom_excerpt_length( $length ) {
