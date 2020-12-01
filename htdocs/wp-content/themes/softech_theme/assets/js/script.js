@@ -10,7 +10,7 @@ jQuery(function($){
         slidesToShow: 1,
         centerMode: true,
         slidesToShow: 1,
-        centerPadding: '20%',
+        centerPadding: '15%',
         prevArrow: '<a class="slick-prev"><</a>',
         nextArrow: '<a class="slick-next">></a>',
 
