@@ -67,6 +67,19 @@
 	</div><!-- .wrap -->
 
 
+	<section class="section wrap mb-4">
+			<div class="section_inner wrap">
+				<?php
+					the_post_navigation(
+						array(
+							'screen_reader_text' => __( 'D\'autres chantiers : ' ),
+							'prev_text' => '<span class="nav-subtitle">' . esc_html__( '', 'softech_theme' ) . '</span> <span class="nav-title">%title</span>',
+							'next_text' => '<span class="nav-subtitle">' . esc_html__( '', 'softech_theme' ) . '</span> <span class="nav-title">%title</span>',
+						)
+					); ?>
+			</div>
+		</section>
+
 	<?php 
 		set_query_var('title', 'Nos services');
 		$pageID = get_option('page_on_front');
