@@ -55,9 +55,9 @@
 
 
 				<div class="block_contact">
-					<p>Vous avez une question ? </p>	
+					<p>Vous souhaitez nous poser une question ?  </p>	
 					
-					<a href="" class="btn--white">Contactez-nous ! </a>	
+					<a href="/contact" class="btn--white block_btn">Contactez-nous ! </a>	
 				</div>
 
 			</aside>

@@ -180,7 +180,7 @@ $page_service = get_field('is_service');
 					<div class="block_contact">
 						<h4 class="block_title">Vous souhaitez nous poser une question ? </h4>	
 						
-						<a href="" class="btn--white block_btn">Contactez-nous ! </a>	
+						<a href="/contact" class="btn--white block_btn">Contactez-nous ! </a>	
 					</div>
 
 				</div>
