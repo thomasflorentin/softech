@@ -30,15 +30,27 @@
                                 </div>
                             </div>
                             <h2 class="h_4 news_title"><?php the_title(); ?></h2>
-                            <div>
-                                <span class="ft_1">Client :</span> <span class="ft_1 blue"><?php the_field('chantier_client'); ?></span>
-                            </div>
-                            <div>
-                                <span class="ft_1">Lieu : </span> <span class="ft_1 blue"><?php the_field('chantier_lieu'); ?></span>
-                            </div>
-                            <div>
-                                <span class="ft_1">Date :</span> <span class="ft_1 blue"><?php the_field('chantier_date'); ?></span>
-                            </div>
+
+                            <?php if( get_field('chantier_date') != '' ) : ?>
+                                <div>
+                                    <span class="ft_1">Date :</span> <span class="ft_1 blue"><?php the_field('chantier_date'); ?></span>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if( get_field('chantier_client') != ''  ) : ?>
+                                <div>
+                                    <span class="ft_1">Client :</span> <span class="ft_1 blue"><?php the_field('chantier_client'); ?></span>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if( get_field('chantier_lieu') != ''  ) : ?>
+                                <div>
+                                    <span class="ft_1">Lieu : </span> <span class="ft_1 blue"><?php the_field('chantier_lieu'); ?></span>
+                                </div>
+                            <?php endif; ?>
+
+
+
                         </a>
                     </div>
 
