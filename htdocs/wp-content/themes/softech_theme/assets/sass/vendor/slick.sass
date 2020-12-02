@@ -173,9 +173,10 @@ $slick-opacity-not-active: 0.25 !default
 .slick-next 
     position: absolute
     display: flex
-    align-items: center
-    line-height: 0px
-    font-size: 60px
+    justify-content: center
+    flex-direction: column
+    line-height: 1
+    font-size: 10px
     cursor: pointer
     background: transparent
     top: 0
@@ -183,21 +184,31 @@ $slick-opacity-not-active: 0.25 !default
     padding: 0
     border: none
     outline: none
-    color: gray
+    color: black
     z-index: 99
-    opacity: 0.5
+    opacity: 1
+    width: 100px
+    text-align: center
     &:hover, &:focus 
         opacity: 1
     
     &.slick-disabled:before 
         opacity: $slick-opacity-not-active
 
+    span
+        font-size: 30px
+    p 
+        margin: 0
+        font-size: 11px
+        line-height: 1
 
 .slick-prev 
-    left: 0
+    left: -40px
+    align-items: flex-start
 
 .slick-next 
-    right: 0
+    right: -40px
+    align-items: flex-end
 
 
 

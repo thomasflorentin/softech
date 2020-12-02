@@ -11,9 +11,9 @@ jQuery(function($){
         centerMode: true,
         slidesToShow: 1,
         centerPadding: '15%',
-        prevArrow: '<a class="slick-prev"><</a>',
-        nextArrow: '<a class="slick-next">></a>',
-
+        prevArrow: '<a class="slick-prev"><span><</span><p>précédent</p></a>',
+        nextArrow: '<a class="slick-next"><span>></span><p>suivant</p></a>',
+        autoplay: true,
     });
 
 

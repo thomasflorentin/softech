@@ -52,7 +52,7 @@
 					</div>
 
 					<div>
-						<span class="ft_2">+33 6 78 98 87 64</span>
+						<span class="ft_2"><?php the_field('website_telephone', 'options'); ?></span>
 					</div>
 
 				</div>
@@ -62,7 +62,7 @@
 						<span class="ft_1">Zone d'intervention</span>
 					</div>
 					<div>
-						<span class="ft_2">Samois sur Seine et région</span>
+						<span class="ft_2"><?php the_field('website_localisation', 'options'); ?></span>
 					</div>
 				</div>
 

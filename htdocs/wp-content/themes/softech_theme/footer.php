@@ -20,7 +20,7 @@
 				<div class="footer_item footer_about">
 					<h3 class="h_3 footer_title">A propos</h3>
 					<?php
-						$image = get_field('website_logo', 'options');
+						$image = get_field('website_logo_white', 'options');
 
 						$size = 'large'; // (thumbnail, medium, large, full or custom size)
 						if( $image ) {
