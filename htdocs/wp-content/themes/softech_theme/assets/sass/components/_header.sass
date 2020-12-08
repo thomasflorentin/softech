@@ -7,11 +7,15 @@
     justify-content: space-between 
     padding: 8px 0
     align-items: center
+    @include up-to(800px) 
+        flex-wrap: wrap
 
 
 
 .header_logo
     width: 35%
+    @include up-to(800px) 
+        width: 45%
 
     img
         max-height: 80px
@@ -20,6 +24,9 @@
 .header_contact
     min-width: 150px
     border-right: 1px solid $gray_light
+    @include up-to(800px) 
+        width: 45%
+        order: 3
 
     span 
         display: inline-block
@@ -28,6 +35,9 @@
 
 .header_localisation
     width: 20%
+    @include up-to(800px) 
+        width: 45%
+        order: 4
 
 
 
@@ -44,6 +54,8 @@
         padding: 0
         display: flex
         justify-content: flex-start
+        @include up-to(800px)
+            overflow-x: scroll
 
         a 
             font-family: "Hind", Sans-serif
@@ -55,4 +67,7 @@
             letter-spacing: 0.56px
             color: white
             padding: 5px 10px
+            @include up-to(800px)
+                padding: 5px 20px
+                font-size: 22px
 

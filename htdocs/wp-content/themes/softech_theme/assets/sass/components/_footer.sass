@@ -9,21 +9,40 @@
     color: #718eaa
     padding: 30px 0
 
+    .flex
+        @include up-to(800px)
+            flex-wrap: wrap
+
     .footer_item 
         width: 25%
+        @include up-to(800px)
+            width: 100%
+            margin-bottom: 60px
 
     .widget-area
         width: 75%
         display: flex
+        @include up-to(800px)
+            width: 100%
+            flex-wrap: wrap
 
     .widget
         width: 33%
         flex: 0 0 33%
         padding: 0 25px
+        @include up-to(800px)
+            width: 100%
+            flex: 0 0 100%
+            margin-bottom: 60px
+            font-size: 1.2rem
+            line-height: 1.8
 
         a, p
             color: $gray_light
-        
+            @include up-to(800px)
+                font-size: 1.2rem
+                line-height: 1.8
+
         a:hover
             color: white
             padding-left: 3px
