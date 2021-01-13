@@ -35,9 +35,9 @@ h2.screen-reader-text
 .section.widepanel
 
     .section_inner
-        @include at-least(800px)
+        @include at-least($bp_medium)
             height: 60vh
-        @include up-to(800px)
+        @include up-to($bp_medium)
             padding: 30px 0
             
     .section_cover
@@ -78,7 +78,7 @@ h2.screen-reader-text
         padding-right: 30px;
         border-left: 5px solid $yellow
         max-width: 900px
-        @include up-to(800px)
+        @include up-to($bp_medium)
             position: relative
             height: auto
 
@@ -86,7 +86,7 @@ h2.screen-reader-text
             color: inherit
             font-size: 1.4rem
             margin-bottom: 0
-            @include up-to(800px)
+            @include up-to($bp_medium)
                 font-size: 1.2rem
 
 
@@ -202,7 +202,7 @@ h2.screen-reader-text
         flex: 0 0 24%
         width: 24%
         margin-bottom: 4%
-        @include up-to(800px)
+        @include up-to($bp_medium)
             flex: 0 0 48%
             width: 48%
   
@@ -241,7 +241,7 @@ h2.screen-reader-text
     .news_card
         flex: 0 0 32%
         width: 32%
-        @include up-to(800px)
+        @include up-to($bp_medium)
             flex: 0 0 48%
             width: 48%
             margin-bottom: 4%
