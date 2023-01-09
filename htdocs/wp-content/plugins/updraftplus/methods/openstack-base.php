@@ -2,7 +2,7 @@
 
 if (!defined('UPDRAFTPLUS_DIR')) die('No direct access allowed.');
 
-if (!class_exists('UpdraftPlus_BackupModule')) require_once(UPDRAFTPLUS_DIR.'/methods/backup-module.php');
+if (!class_exists('UpdraftPlus_BackupModule')) updraft_try_include_file('methods/backup-module.php', 'require_once');
 
 class UpdraftPlus_BackupModule_openstack_base extends UpdraftPlus_BackupModule {
 
@@ -57,7 +57,7 @@ class UpdraftPlus_BackupModule_openstack_base extends UpdraftPlus_BackupModule {
 			return false;
 		}
 
-		foreach ($backup_array as $key => $file) {
+		foreach ($backup_array as $file) {
 		
 			$file_key = 'status_'.md5($file);
 			$file_status = $this->jobdata_get($file_key, null, 'openstack_'.$file_key);
@@ -339,7 +339,7 @@ class UpdraftPlus_BackupModule_openstack_base extends UpdraftPlus_BackupModule {
 	 * @param Array        $sizeinfo - unused here
 	 * @return Boolean|String - either a boolean true or an error code string
 	 */
-	public function delete($files, $data = false, $sizeinfo = array()) {// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+	public function delete($files, $data = false, $sizeinfo = array()) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- $sizeinfo unused
 
 		global $updraftplus;
 		if (is_string($files)) $files = array($files);
@@ -549,6 +549,7 @@ class UpdraftPlus_BackupModule_openstack_base extends UpdraftPlus_BackupModule {
 
 	/**
 	 * Get the pre configuration template
+	 * DEVELOPER NOTES: Please don't use/call this method anymore as it is currently used by OpenStack and Cloudfiles(Rackspace) storage, and it's consider to be removed in future versions. Once OpenStack and Cloudfiles templates are CSP-compliant, this should be removed and should be placed in the class child instead of the base class.
 	 *
 	 * @return String - the template
 	 */
@@ -587,6 +588,7 @@ class UpdraftPlus_BackupModule_openstack_base extends UpdraftPlus_BackupModule {
 
 	/**
 	 * Get the configuration template
+	 * DEVELOPER NOTES: Please don't use/call this method anymore as it is currently used by OpenStack and Cloudfiles(Rackspace) storage, and it's consider to be removed in future versions. Once OpenStack and Cloudfiles templates are CSP-compliant, this should be removed and should be placed in the class child instead of the base class.
 	 *
 	 * @return String - the template, ready for substitutions to be carried out
 	 */

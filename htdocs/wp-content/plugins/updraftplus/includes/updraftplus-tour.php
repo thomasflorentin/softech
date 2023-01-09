@@ -40,7 +40,7 @@ class UpdraftPlus_Tour {
 		add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
 
 		// only init and load assets if the tour hasn't been canceled
-		if (isset($_REQUEST['updraftplus_tour']) && 0 === intval($_REQUEST['updraftplus_tour'])) {
+		if (isset($_REQUEST['updraftplus_tour']) && 0 === (int) $_REQUEST['updraftplus_tour']) {
 			$this->set_tour_status(array('current_step' => 'start'));
 			return;
 		}
@@ -51,7 +51,7 @@ class UpdraftPlus_Tour {
 		}
 
 		// if 'Take tour' link was used, reset tour
-		if (isset($_REQUEST['updraftplus_tour']) && 1 === intval($_REQUEST['updraftplus_tour'])) {
+		if (isset($_REQUEST['updraftplus_tour']) && 1 === (int) $_REQUEST['updraftplus_tour']) {
 			$this->reset_tour_status();
 		}
 
@@ -159,7 +159,7 @@ class UpdraftPlus_Tour {
 				'text' => __('Thank you for taking the tour.', 'updraftplus')
 					.'<div class="ud-notice">'
 					.'<h3>'.__('UpdraftPlus Premium and addons', 'updraftplus').'</h3>'
-					.__('UpdraftPlus Premium has many more exciting features!', 'updraftplus').' <a href="'.apply_filters('updraftplus_com_link', 'https://updraftplus.com/shop/updraftplus-premium/').'" target="_blank">'.__('Find out more here.', 'updraftplus').'</a>'
+					.__('UpdraftPlus Premium has many more exciting features!', 'updraftplus').' <a href="'.$updraftplus->get_url('premium').'" target="_blank">'.__('Find out more here.', 'updraftplus').'</a>'
 					.'</div>',
 				'attach_to' => '#updraft-navtab-addons top',
 				'button' => __('Finish', 'updraftplus')

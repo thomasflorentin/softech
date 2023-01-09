@@ -8,7 +8,7 @@ if (!defined('UPDRAFTPLUS_DIR')) die('No direct access.');
  * Migration code for "new"-style options removed: Feb 2017 (created: Dec 2013)
  */
 
-if (!class_exists('UpdraftPlus_BackupModule')) require_once(UPDRAFTPLUS_DIR.'/methods/backup-module.php');
+if (!class_exists('UpdraftPlus_BackupModule')) updraft_try_include_file('methods/backup-module.php', 'require_once');
 
 /**
  * Old SDK
@@ -18,18 +18,18 @@ class UpdraftPlus_BackupModule_cloudfiles_oldsdk extends UpdraftPlus_BackupModul
 	/**
 	 * This function does not catch any exceptions - that should be done by the caller
 	 *
-	 * @param  string  $user
-	 * @param  string  $apikey
-	 * @param  string  $authurl
-	 * @param  boolean $useservercerts
-	 * @return array
+	 * @param  String  $user
+	 * @param  String  $apikey
+	 * @param  String  $authurl
+	 * @param  Boolean $useservercerts
+	 * @return Array
 	 */
 	private function getCF($user, $apikey, $authurl, $useservercerts = false) {
 		
 		$storage = $this->get_storage();
 		if (!empty($storage)) return $storage;
 		
-		if (!class_exists('UpdraftPlus_CF_Authentication')) include_once(UPDRAFTPLUS_DIR.'/includes/cloudfiles/cloudfiles.php');
+		if (!class_exists('UpdraftPlus_CF_Authentication')) updraft_try_include_file('includes/cloudfiles/cloudfiles.php', 'include_once');
 
 		if (!defined('UPDRAFTPLUS_SSL_DISABLEVERIFY')) define('UPDRAFTPLUS_SSL_DISABLEVERIFY', UpdraftPlus_Options::get_updraft_option('updraft_ssl_disableverify'));
 
@@ -57,7 +57,7 @@ class UpdraftPlus_BackupModule_cloudfiles_oldsdk extends UpdraftPlus_BackupModul
 	 */
 	public function get_supported_features() {
 		// This options format is handled via only accessing options via $this->get_options()
-		return array('multi_options', 'config_templates', 'multi_storage');
+		return array('multi_options', 'config_templates', 'multi_storage', 'conditional_logic');
 	}
 
 	/**
@@ -116,7 +116,7 @@ class UpdraftPlus_BackupModule_cloudfiles_oldsdk extends UpdraftPlus_BackupModul
 
 		$chunk_size = 5*1024*1024;
 
-		foreach ($backup_array as $key => $file) {
+		foreach ($backup_array as $file) {
 
 			$fullpath = $updraft_dir.$file;
 			$orig_file_size = filesize($fullpath);
@@ -284,7 +284,7 @@ class UpdraftPlus_BackupModule_cloudfiles_oldsdk extends UpdraftPlus_BackupModul
 	 * @param Array $sizeinfo      - unused here
 	 * @return Boolean|String - either a boolean true or an error code string
 	 */
-	public function delete($files, $cloudfilesarr = false, $sizeinfo = array()) {// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+	public function delete($files, $cloudfilesarr = false, $sizeinfo = array()) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- $sizeinfo is unused
 
 		if (is_string($files)) $files =array($files);
 
@@ -515,7 +515,7 @@ class UpdraftPlus_BackupModule_cloudfiles_oldsdk extends UpdraftPlus_BackupModul
  * Modifies handerbar template options
  *
  * @param array $opts handerbar template options
- * @return array - Modified handerbar template options
+ * @return Array - Modified handerbar template options
  */
 	public function transform_options_for_template($opts) {
 		$opts['apikey'] = trim($opts['apikey']);
@@ -595,7 +595,7 @@ class UpdraftPlus_BackupModule_cloudfiles_oldsdk extends UpdraftPlus_BackupModul
 
 // Moved to the bottom to fix a bug in some version or install of PHP which required UpdraftPlus_BackupModule_cloudfiles_oldsdk to be defined earlier in the file (despite the conditionality) - see HS#19911
 if (version_compare(PHP_VERSION, '5.3.3', '>=') && (!defined('UPDRAFTPLUS_CLOUDFILES_USEOLDSDK') || UPDRAFTPLUS_CLOUDFILES_USEOLDSDK != true)) {
-	include_once(UPDRAFTPLUS_DIR.'/methods/cloudfiles-new.php');
+	updraft_try_include_file('methods/cloudfiles-new.php', 'include_once');
 	class UpdraftPlus_BackupModule_cloudfiles extends UpdraftPlus_BackupModule_cloudfiles_opencloudsdk {
 	}
 } else {
