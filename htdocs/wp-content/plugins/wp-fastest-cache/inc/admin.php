@@ -228,6 +228,7 @@
 		public function addJavaScript(){
 			wp_enqueue_script("jquery-ui-draggable");
 			wp_enqueue_script("jquery-ui-position");
+			wp_enqueue_script("jquery-ui-sortable");
 			wp_enqueue_script("wpfc-dialog", plugins_url("wp-fastest-cache/js/dialog.js"), array(), time(), false);
 			wp_enqueue_script("wpfc-dialog-new", plugins_url("wp-fastest-cache/js/dialog_new.js"), array(), time(), false);
 
@@ -381,7 +382,7 @@
 			
 
 			if(!get_option('permalink_structure')){
-				return array("You have to set <strong><u><a href='".admin_url()."options-permalink.php"."'>permalinks</a></u></strong>", "error");
+				return array("You have to set <strong><u><a target='_blank' href='https://www.wpfastestcache.com/tutorial/how-to-change-default-permalink-in-wordpress/'>permalinks</a></u></strong>", "error");
 			}else if($res = $this->checkSuperCache($path, $htaccess)){
 				return $res;
 			}else if($this->isPluginActive('fast-velocity-minify/fvm.php')){
@@ -506,6 +507,21 @@
 							if(preg_match("/".preg_quote($homeurl_base_name[1], "/")."$/", trim(ABSPATH, "/"))){
 								$basename = $homeurl_base_name[1]."/".$basename;
 							}
+						}else{
+							if(!preg_match("/\//", $homeurl_base_name[1]) && !preg_match("/\//", $siteurl_base_name[1])){
+								/*
+									site_url() return http://example.com/wordpress
+									home_url() returns http://example.com/blog
+								*/
+
+								$basename = $homeurl_base_name[1]."/".$basename;
+								$tmp_ABSPATH = str_replace(" ", "\ ", ABSPATH);
+
+								if(preg_match("/\/$/", $tmp_ABSPATH)){
+									$tmp_ABSPATH = rtrim($tmp_ABSPATH, "/");
+									$tmp_ABSPATH = dirname($tmp_ABSPATH)."/".$homeurl_base_name[1]."/";
+								}
+							}
 						}
 					}else{
 						/*
@@ -521,7 +537,9 @@
 					$RewriteCond = "RewriteCond %{DOCUMENT_ROOT}/".$basename." -f"."\n";
 				}else{
 					// to escape spaces
-					$tmp_ABSPATH = str_replace(" ", "\ ", ABSPATH);
+					if(!isset($tmp_ABSPATH)){
+						$tmp_ABSPATH = str_replace(" ", "\ ", ABSPATH);
+					}
 
 					$RewriteCond = "RewriteCond %{DOCUMENT_ROOT}/".$basename." -f [or]"."\n";
 					$RewriteCond = $RewriteCond."RewriteCond ".$tmp_ABSPATH."$1.webp -f"."\n";
@@ -558,7 +576,7 @@
 
 
 			$data = "# BEGIN LBCWpFastestCache"."\n".
-					'<FilesMatch "\.(webm|ogg|mp4|ico|pdf|flv|jpg|jpeg|png|gif|webp|js|css|swf|x-html|css|xml|js|woff|woff2|otf|ttf|svg|eot)(\.gz)?$">'."\n".
+					'<FilesMatch "\.(webm|ogg|mp4|ico|pdf|flv|avif|jpg|jpeg|png|gif|webp|js|css|swf|x-html|css|xml|js|woff|woff2|otf|ttf|svg|eot)(\.gz)?$">'."\n".
 					'<IfModule mod_expires.c>'."\n".
 					'AddType application/font-woff2 .woff2'."\n".
 					'AddType application/x-font-opentype .otf'."\n".
@@ -567,6 +585,7 @@
 					'ExpiresByType video/webm A10368000'."\n".
 					'ExpiresByType video/ogg A10368000'."\n".
 					'ExpiresByType video/mp4 A10368000'."\n".
+					'ExpiresByType image/avif A10368000'."\n".
 					'ExpiresByType image/webp A10368000'."\n".
 					'ExpiresByType image/gif A10368000'."\n".
 					'ExpiresByType image/png A10368000'."\n".
@@ -661,6 +680,10 @@
 				$this->deleteCache();
 			}
 
+			if(defined("WPFC_SERVE_ONLY_VIA_CACHE") && WPFC_SERVE_ONLY_VIA_CACHE){
+				$htaccess = preg_replace("/#\s?BEGIN\s?WpFastestCache.*?#\s?END\s?WpFastestCache/s", "", $htaccess);
+			}
+
 			return $htaccess;
 		}
 
@@ -700,7 +723,10 @@
 
 			$language_negotiation_type = apply_filters('wpml_setting', false, 'language_negotiation_type');
 			if(($language_negotiation_type == 2) && $this->isPluginActive('sitepress-multilingual-cms/sitepress.php')){
-				$cache_path = '/cache/all/%{HTTP_HOST}/';
+				$cache_path = '/cache/%{HTTP_HOST}/all/';
+				$disable_condition = true;
+			}else if($this->isPluginActive('polylang/polylang.php')){
+				$cache_path = '/cache/%{HTTP_HOST}/all/';
 				$disable_condition = true;
 			}else{
 				$cache_path = '/cache/all/';
@@ -708,7 +734,7 @@
 			}
 
 			if(isset($_POST["wpFastestCacheMobile"]) && $_POST["wpFastestCacheMobile"] == "on"){
-				$mobile = "RewriteCond %{HTTP_USER_AGENT} !^.*(".$this->getMobileUserAgents().").*$ [NC]"."\n";
+				$mobile = "RewriteCond %{HTTP_USER_AGENT} !^.*".$this->getMobileUserAgents().".*$ [NC]"."\n";
 
 				if(isset($_SERVER['HTTP_CLOUDFRONT_IS_MOBILE_VIEWER'])){
 					$mobile = $mobile."RewriteCond %{HTTP_CLOUDFRONT_IS_MOBILE_VIEWER} false [NC]"."\n";
@@ -860,7 +886,9 @@
 			if($this->isPluginActive('wp-super-cache/wp-cache.php')){
 				return array("WP Super Cache needs to be deactive", "error");
 			}else{
-				@unlink($path."wp-content/wp-cache-config.php");
+				if(file_exists($path."wp-content/wp-cache-config.php")){
+					@unlink($path."wp-content/wp-cache-config.php");
+				}
 
 				$message = "";
 				
@@ -902,8 +930,8 @@
 				
 				$htaccess = preg_replace("/\n+/","\n", $htaccess);
 
-				echo "<noscript id='wpfc-htaccess-data'>".$htaccess."</noscript>";
-				echo "<noscript id='wpfc-htaccess-path-data'>".$path.".htaccess"."</noscript>";
+				echo "<noscript id='wpfc-htaccess-data'>".esc_html($htaccess)."</noscript>";
+				echo "<noscript id='wpfc-htaccess-path-data'>".esc_html($path).".htaccess"."</noscript>";
 				?>
 				<script type="text/javascript">
 					jQuery(document).ready(function(){
@@ -970,6 +998,7 @@
 			$wpFastestCachePreload_attachment = isset($this->options->wpFastestCachePreload_attachment) ? 'checked="checked"' : "";
 			$wpFastestCachePreload_number = isset($this->options->wpFastestCachePreload_number) ? esc_attr($this->options->wpFastestCachePreload_number) : 4;
 			$wpFastestCachePreload_restart = isset($this->options->wpFastestCachePreload_restart) ? 'checked="checked"' : "";
+			$wpFastestCachePreload_order = isset($this->options->wpFastestCachePreload_order) ? esc_attr($this->options->wpFastestCachePreload_order) : "";
 
 
 
@@ -1011,8 +1040,8 @@
 							}else if((isset($_POST["wpFastestCachePage"])) && ("wpfc-".$_POST["wpFastestCachePage"] == $value["id"])){
 								$checked = ' checked="checked" ';
 							}
-							echo '<input '.$checked.' type="radio" id="'.$value["id"].'" name="tabGroup1" style="display:none;">'."\n";
-							echo '<label for="'.$value["id"].'">'.$value["title"].'</label>'."\n";
+							echo '<input '.esc_html($checked).' type="radio" id="'.esc_html($value["id"]).'" name="tabGroup1" style="display:none;">'."\n";
+							echo '<label for="'.esc_html($value["id"]).'">'.esc_html($value["title"]).'</label>'."\n";
 						}
 					?>
 				    <br>
@@ -1445,6 +1474,9 @@
 				   		<div class="exclude_section_clear" style=" margin-left: 3%; width: 95%; margin-bottom: 20px; margin-top: 0;"><div></div></div>
 
 				   		<h2 id="delete-cache-h2" style="padding-left:20px;padding-bottom:10px;"><?php _e("Delete Cache", "wp-fastest-cache"); ?></h2>
+
+				   		<?php //include_once(WPFC_MAIN_PATH."templates/cache_path.php"); ?>
+
 				    	<form method="post" name="wp_manager" class="delete-line" action="options.php">
 							<?php settings_fields( 'wpfc-group' ); ?>
 				    		<input type="hidden" value="deleteCache" name="wpFastestCachePage">
@@ -1589,6 +1621,33 @@
 					    			echo "WpFcTimeout.init();";
 					    		} ?>
 				    	</script>
+
+
+
+				    	<div class="exclude_section_clear" style=" margin-left: 3%; width: 95%; margin-bottom: 12px; margin-top: 0;"><div></div></div>
+
+				    	<h2 style="padding-bottom:10px;padding-left:20px;float:left;"><?php _e("Clearing Specific Pages", "wp-fastest-cache"); ?></h2>
+
+				    	<div style="float:left;margin-top:-37px;padding-left:628px;">
+				    		<button type="button" <?php echo $disable_wp_cron;?> class="wpfc-add-new-csp-button wpfc-dialog-buttons" style="display: inline-block;padding: 4px 10px;">
+				    			<span><?php _e("Add New Rule", "wp-fastest-cache"); ?></span>
+							</button>
+				    	</div>
+
+				    	<div class="wpfc-csp-list" style="display: block;width:98%;float:left;">
+
+				    	</div>
+
+				    	<?php
+				    		include(WPFC_MAIN_PATH."templates/clearing_specific_pages.php");
+				    	?>
+
+
+
+
+
+
+
 				    </div>
 
 
@@ -1665,30 +1724,24 @@
 				    				<h1 style="float:left;" id="just-h1"><?php _e("Just", "wp-fastest-cache"); ?></h1><h1><span style="margin-left:5px;" id="wpfc-premium-price"><?php echo $premium_price; ?></span></h1>
 				    				<p><?php _e("The download button will be available after paid. You can buy the premium version now.", "wp-fastest-cache"); ?></p>
 
-				    				<?php if(!preg_match("/Caiu\s*Na/i", get_bloginfo("name")) && !preg_match("/(caiuna|escort|porn)/i", $_SERVER["HTTP_HOST"])){ ?>
-					    				<?php if(class_exists("WpFastestCachePowerfulHtml")){ ?>
-						    					<button id="wpfc-buy-premium-button" type="submit" class="wpfc-btn primaryDisableCta" style="width:200px;">
-							    					<span><?php _e("Purchased", "wp-fastest-cache"); ?></span>
+				    				<?php if(class_exists("WpFastestCachePowerfulHtml")){ ?>
+					    					<button id="wpfc-buy-premium-button" type="submit" class="wpfc-btn primaryDisableCta" style="width:200px;">
+						    					<span><?php _e("Purchased", "wp-fastest-cache"); ?></span>
+						    				</button>
+					    				<?php }else{ ?>
+
+					    			
+					    					<form action="<?php echo $premium_buy_link; ?>" method="post">
+						    					<input type="hidden" name="ip" value="<?php echo $_SERVER["REMOTE_ADDR"]; ?>">
+						    					<input type="hidden" name="wpfclang" value="<?php echo isset($this->options->wpFastestCacheLanguage) ? esc_attr($this->options->wpFastestCacheLanguage) : ""; ?>">
+						    					<input type="hidden" name="bloglang" value="<?php echo get_bloginfo('language'); ?>">
+						    					<input type="hidden" name="hostname" value="<?php echo str_replace(array("http://", "www."), "", $_SERVER["HTTP_HOST"]); ?>">
+							    				<button id="wpfc-buy-premium-button" type="submit" class="wpfc-btn primaryCta" style="width:200px;">
+							    					<span><?php _e("Buy", "wp-fastest-cache"); ?></span>
 							    				</button>
-						    				<?php }else{ ?>
+						    				</form>
+					    				
 
-						    					<?php if(is_multisite()){ ?>
-						    						<button id="wpfc-buy-premium-button" type="submit" class="wpfc-btn primaryCta" style="width:200px;background-color:red;border-color:red;">
-						    							<span>Not Available<br>for<br>Multi-Site</span>
-						    						</button>
-						    					<?php }else{ ?>
-							    					<form action="<?php echo $premium_buy_link; ?>" method="post">
-								    					<input type="hidden" name="ip" value="<?php echo $_SERVER["REMOTE_ADDR"]; ?>">
-								    					<input type="hidden" name="wpfclang" value="<?php echo isset($this->options->wpFastestCacheLanguage) ? esc_attr($this->options->wpFastestCacheLanguage) : ""; ?>">
-								    					<input type="hidden" name="bloglang" value="<?php echo get_bloginfo('language'); ?>">
-								    					<input type="hidden" name="hostname" value="<?php echo str_replace(array("http://", "www."), "", $_SERVER["HTTP_HOST"]); ?>">
-									    				<button id="wpfc-buy-premium-button" type="submit" class="wpfc-btn primaryCta" style="width:200px;">
-									    					<span><?php _e("Buy", "wp-fastest-cache"); ?></span>
-									    				</button>
-								    				</form>
-						    					<?php } ?>
-
-						    			<?php } ?>
 					    			<?php } ?>
 
 
@@ -1728,7 +1781,7 @@
 
 					    						Wpfc_New_Dialog.dialog("wpfc-modal-downloaderror", {close: "default"});
 
-					    						var wpfc_api_url = '<?php echo "http://api.wpfastestcache.net/premium/newdownload/".str_replace(array("http://", "www."), "", $_SERVER["HTTP_HOST"])."/".get_option("WpFc_api_key"); ?>';
+					    						var wpfc_api_url = '<?php echo "https://api.wpfastestcache.net/premium/newdownload/".str_replace(array("http://", "www."), "", $_SERVER["HTTP_HOST"])."/".get_option("WpFc_api_key"); ?>';
 					    						jQuery("div[id^='wpfc-modal-downloaderror'] a.wpfc-download-now").attr("href", wpfc_api_url);
 
 					    						// jQuery("body").append(data);
@@ -1919,15 +1972,6 @@
 				    				<div class="meta"></div>
 				    			</div>
 
-				    			<div wpfc-cdn-name="photon" class="int-item int-item-left">
-				    				<img src="<?php echo plugins_url("wp-fastest-cache/images/photoncdn.png"); ?>" />
-				    				<div class="app">
-				    					<div style="font-weight:bold;font-size:14px;">CDN by Photon</div>
-				    					<p>Wordpress Content Delivery Network Services</p>
-				    				</div>
-				    				<div class="meta"></div>
-				    			</div>
-
 
 				    			<div wpfc-cdn-name="cloudflare" class="int-item">
 				    				<img style="border-radius:50px;" src="<?php echo plugins_url("wp-fastest-cache/images/cloudflare.png"); ?>" />
@@ -1959,7 +2003,12 @@
 						    				if($cdn_value->id == "amazonaws" || $cdn_value->id == "keycdn" || $cdn_value->id == "cdn77"){
 						    					$cdn_value->id = "other";
 						    				}
-						    				?>jQuery("div[wpfc-cdn-name='<?php echo $cdn_value->id;?>']").find("div.meta").addClass("isConnected");<?php
+
+						    				if(isset($cdn_value->status) && $cdn_value->status == "pause"){
+						    					?>jQuery("div[wpfc-cdn-name='<?php echo $cdn_value->id;?>']").find("div.meta").addClass("isConnected pause");<?php
+						    				}else{
+						    					?>jQuery("div[wpfc-cdn-name='<?php echo $cdn_value->id;?>']").find("div.meta").addClass("isConnected");<?php
+						    				}
 					    				}
 					    			}
 					    		?>
@@ -1983,7 +2032,8 @@
 
 											WpfcCDN.init({"id" : jQuery(e.currentTarget).attr("wpfc-cdn-name"),
 							    				"template_main_url" : "<?php echo plugins_url('wp-fastest-cache/templates/cdn'); ?>",
-							    				"values" : data
+							    				"values" : data,
+							    				"nonce" : "<?php echo wp_create_nonce("cdn-nonce"); ?>"
 							    			});
 
 
@@ -2008,7 +2058,14 @@
 				    </div>
 
 				    <div class="tab8" style="padding-left:20px;">
-				    	<h2 style="padding-bottom:10px;"><?php _e("Database Cleanup", "wp-fastest-cache"); ?></h2>
+				    	<h2 style="padding-bottom:10px;display: inline-block;float: left;width: 48%;"><?php _e("Database Cleanup", "wp-fastest-cache"); ?></h2>
+
+				    	<?php
+				    		if(file_exists(WPFC_WP_PLUGIN_DIR."/wp-fastest-cache-premium/pro/templates/db-auto-cleanup.php")){
+				    			include_once WPFC_WP_PLUGIN_DIR."/wp-fastest-cache-premium/pro/templates/db-auto-cleanup.php";
+				    		}
+				    	?>
+
 				    	<div>
 
 			    		<?php if(!$this->isPluginActive("wp-fastest-cache-premium/wpFastestCachePremium.php")){ ?>
@@ -2018,6 +2075,11 @@
 				    				}
 				    				div.tab8 .integration-page{
 				    					opacity: 0.3 !important;
+				    					pointer-events: none !important;
+				    				}
+				    				select#wpfc-auto-cleanup-option{
+				    					opacity: 0.3 !important;
+				    					pointer-events: none !important;
 				    				}
 				    			</style>
 				    			
@@ -2182,62 +2244,6 @@
 			            </div>
 			        </div>
 			</div>
-			<script type="text/javascript">
-				var WPFC_SPINNER = {
-					id: false,
-					number: false,
-					init: function(id, number){
-						this.id = id;
-						//this.number = number;
-						this.set_number();
-						this.click_event();
-					},
-					set_number: function(){
-						this.number = jQuery("#" + this.id + " input.wpfc-form-spinner-input").val();
-						this.number = parseInt(this.number);
-					},
-					click_event: function(){
-						var id = this.id;
-						var number = this.number;
-
-						jQuery("#" + this.id + " .wpfc-form-spinner-up, #" + this.id + " .wpfc-form-spinner-down").click(function(e){
-							if(jQuery(this).attr('class').match(/up$/)){
-								number = number + 2;
-							}else if(jQuery(this).attr('class').match(/down$/)){
-								number = number - 2;
-							}
-
-							number = number < 2 ? 2 : number;
-							number = number > 12 ? 12 : number;
-
-							jQuery("#" + id + " .wpfc-form-spinner-number").text(number);
-							jQuery("#" + id + " input.wpfc-form-spinner-input").val(number);
-						});
-					}
-				};
-			</script>
-			<script type="text/javascript">
-				jQuery("#wpFastestCachePreload").click(function(){
-					if(jQuery(this).is(':checked')){
-						if(jQuery("div[id^='wpfc-modal-preload-']").length === 0){
-							Wpfc_New_Dialog.dialog("wpfc-modal-preload", {close: function(){
-								Wpfc_New_Dialog.clone.find("div.window-content input").each(function(){
-									if(jQuery(this).is(':checked')){
-										jQuery("div.tab1 div[template-id='wpfc-modal-preload'] div.window-content input[name='" + jQuery(this).attr("name") + "']").attr("checked", true);
-									}else{
-										jQuery("div.tab1 div[template-id='wpfc-modal-preload'] div.window-content input[name='" + jQuery(this).attr("name") + "']").attr("checked", false);
-									}
-
-									Wpfc_New_Dialog.clone.remove();
-								});
-							}});
-
-							Wpfc_New_Dialog.show_button("close");
-							WPFC_SPINNER.init("wpfc-form-spinner-preload", 6);
-						}
-					}
-				});
-			</script>
 
 			<?php if(!class_exists("WpFastestCacheImageOptimisation")){ ?>
 				<div id="wpfc-premium-tooltip" style="display:none;width: 160px; height: 60px; position: absolute; margin-left: 354px; margin-top: 112px; color: white;">

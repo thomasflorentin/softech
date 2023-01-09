@@ -1,10 +1,10 @@
 === WP Fastest Cache ===
 Contributors: emrevona
 Donate link: http://profiles.wordpress.org/emrevona/
-Tags: cache, caching, performance, wp-cache, total cache, super cache, cdn
+Tags: cache, Optimize, performance, wp-cache, core web vitals
 Requires at least: 3.3
-Tested up to: 5.5
-Stable tag: 0.9.1.1
+Tested up to: 6.1
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,7 @@ Setup of this plugin is so easy. You don't need to modify the .htacces file. It 
 12. Cloudflare support
 13. Preload Cache - Create the cache of all the site automatically
 14. Exclude pages and user-agents
+15. WP-CLI cache clearing
 
 <h4>Performance Optimization</h4>
 
@@ -69,6 +70,12 @@ The free version is enough to speed up your site but in the premium version ther
 10. Database Cleanup
 11. Google Fonts Async
 12. Lazy Load - Defer offscreen images. Consider lazy-loading offscreen and hidden images after all critical resources have finished loading to lower time to interactive
+
+<h4>Information</h4>
+
+It is very inconvenient to use multiple caching plugins at the same time. That's why you need to disable plugins such as LiteSpeed Cache, WP-Optimize, W3 Total Cache, WP Super Cache, SiteGround Optimizer, Breeze while using WP Fastest Cache.
+
+WP Fastest Cache is compatible with most popular plugins such as Contact Form 7, Yoast SEO, Elementor Website Builder, Classic Editor, Akismet Spam Protection, WooCommerce, Contact Form by WPForms, Really Simple SSL, All-in-One WP Migration, Yoast Duplicate Post, Wordfence Security – Firewall & Malware Scan, WordPress Importer, UpdraftPlus WordPress Backup Plugin, MonsterInsights, All in One SEO, WP Mail SMTP by WPForms.
 
 <h4>Supported languages: </h4>
 
@@ -123,6 +130,128 @@ The free version is enough to speed up your site but in the premium version ther
 18. Database Cleanup
 
 == Changelog ==
+
+= 1.0.9 =
+* to improve the style of exclude feature wizard
+* to fix hiding the toolbar when logged in
+* to fix PHP Notice: Undefined offset: -1 in js-utilities.php on line 67
+* to fix PHP Fatal error: Uncaught Error: Non-static method cannot be called statically in clearing-specific-pages.php on line 58
+
+= 1.0.8 =
+* to stop showing the "DONOTCACHEPAGE is defined as TRUE" comment in the footer for the ajax requests
+* <strong>[FEATURE]</strong> Clearing Specific Pages [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-of-specific-urls-when-updating-or-posting/">Details</a>]
+* to fix the site url on the exclude page
+* to fix PHP Notice:  Function WP_User_Query::query was called incorrectly. User queries should not be run before the plugins_loaded hook
+
+= 1.0.7 =
+* <strong>[FEATURE]</strong> Clearing Specific Pages (BETA) [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-of-specific-urls-when-updating-or-posting/">Details</a>]
+* to add last-modified header when cache is served via php
+
+= 1.0.6 =
+* to serve sources via cdn for excluded pages if cdn is enabled
+* to fix PHP Notice: Undefined offset: -1 in js-utilities.php  on line 48
+
+= 1.0.5 =
+* to fix E_NOTICE: Undefined variable: path in wpFastestCache.php on line 2142
+* to add excluding feature for Buffer Callback Filter [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/buffer-callback-filter/#exclude">Details</a>]
+
+= 1.0.4 =
+* to add avif extensions for cdn
+* to add WPFC_SERVE_ONLY_VIA_CACHE [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/how-to-serve-cache-only-via-php/">Details</a>]
+
+= 1.0.3 =
+* Photon will no longer be supported [<a target="_blank" href="https://www.wpfastestcache.com/blog/photon-will-no-longer-be-supported/">Details</a>]
+* to exclude category url for preload if any error occurs
+
+= 1.0.2 =
+* to add WP-CLI command for clearing cache of a post [<a target="_blank" href="https://www.wpfastestcache.com/features/wp-cli-commands/">Details</a>]
+* to fix Warning scandir() at wpFastestCache.php:302
+* to fix Warning file_put_contents(/cache/wpfc-minified/index.html) at cache.php:1090
+* to fix Warning unlink(wp-cache-config.php) admin.php:885
+
+= 1.0.1 =
+* to clear only cache of post/page even if the "update post" option is disabled
+
+= 1.0.0 =
+* to define the save_settings() function of single preload feature as static function
+
+= 0.9.9 =
+* to clear cache when regular price of woocommorce is updated
+* refactoring of Automatic Cache
+
+= 0.9.8 =
+* to clear cache after updating Elementor Website Builder plugin
+* to clear cache after theme or plugin update by custom settings [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-theme-or-plugin-update/">Details</a>]
+* to enable Auto Cache Panel for the classic editor which is enabled via add_filter()
+
+= 0.9.7 =
+* to clear cache after theme or plugin update by default [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-theme-or-plugin-update/">Details</a>]
+
+= 0.9.6 =
+* refactoring of serving non-exists minified files
+* to fix htaccess rule for Polylang plugin
+* to fix condition of clear cache after plugin update
+
+= 0.9.5 =
+* to prevent generating cache when DONOTCACHEPAGE is defined as true for Divi theme
+* to add nonce security system for cdn saving 
+
+= 0.9.4 =
+* to make compatible the Auto Cache feature with the Disable Gutenberg plugin
+* refactoring of rewrite rule of HTTP_USER_AGENT
+* to check that resources have been successfully optimized
+
+= 0.9.3 =
+* to prevent removing "/" for exclude rules
+* <strong>[FEATURE]</strong> to add "pause" feature for cdn [<a target="_blank" href="https://www.wpfastestcache.com/features/temporarily-disable-cdn/">Details</a>]
+* to add wpfc_clear_all_site_cache() for clearing cache of all sites [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/delete-the-cache-by-calling-the-function/">Details</a>]
+* to add spinner for the buttons on the cdn wizard
+* refactroing of excluding "There has been a critical error on this website" page
+
+= 0.9.2 =
+* <strong>[FEATURE]</strong> to create cache after publishing new post or updating a post [<a target="_blank" href="https://www.wpfastestcache.com/features/automatic-cache/">Details</a>]
+* <strong>[FEATURE]</strong> Clear cache after activate/deactivate plugin [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-activate-deactivate-a-plugin/">Details</a>]
+
+= 0.9.1.9 =
+* <strong>[FEATURE]</strong> Clear cache after switch theme [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-switch-theme/">Details</a>]
+
+= 0.9.1.8 =
+* to make compatible the preload feature with WPML
+* refactoring of clearing cache of content which is moved to trash
+* to fix Notice: Undefined variable: no_selected in single-preload.php on line 39
+* to add image/avif for browser caching
+
+= 0.9.1.7 =
+* to clear cache of the store homepage after WooCommerce order
+* to fix vulnerability (discoverd by Gen Sato)
+* to clear cache after Woocommerce order status changed
+* to add WPFC_DISABLE_CLEARING_CACHE_AFTER_WOOCOMMERCE_ORDER_STATUS_CHANGED [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/woocommerce-settings/#after-order-status-changed">Details</a>]
+
+= 0.9.1.6 =
+* to fix Notice: Undefined variable: order_arr in preload.php on line 161
+* to fix Notice: Undefined property: stdClass::$go in preload.php on line 440
+* to start using the API Token system instead of Global API for Cloudflare [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/wp-fastest-cache-cloudflare/">Details</a>]
+* to fix removing backslashes issue in the pre tag
+* to disable cache for the IP based urls on the bitnami servers
+* to disable cdn if the query string contains wc-api
+
+= 0.9.1.5 =
+* <strong>[FEATURE]</strong> to add Re-Order feture for Preload [<a target="_blank" href="https://www.wpfastestcache.com/features/re-order-preload/">Details</a>]
+
+= 0.9.1.4 =
+* to fix saving "Update Post" settings issue
+* to fix saving "New Post" settings issue
+* <strong>[FEATURE]</strong> Compatible with the AMP Takeover feature of <a target="_blank" href="https://wordpress.org/plugins/accelerated-mobile-pages/">AMP for WP – Accelerated Mobile Pages</a>
+
+= 0.9.1.3 =
+* to fix PHP Notice: Undefined offset: -1 js-utilities.php on line 84
+* to show the details of the error on the Cloudflare cdn integraiton
+
+= 0.9.1.2 =
+* to add webp extension for CDN
+* to replace the attribute which is data-bg-webp with cdn-url
+* to save the Cloudflare zone id instead of getting it via api continuously
+* to prevent calling cloudflare_clear_cache() function multiple times
 
 = 0.9.1.1 =
 * to prevent caching 403 forbidden page which is generated by iThemes Security plugin
@@ -250,26 +379,8 @@ Yes, it is compatible with Adsense 100%.
 = Is this plugin compatible with CloudFlare? =
 Yes, it is but you need to read the details. <a href="http://www.wpfastestcache.com/tutorial/wp-fastest-cache-cloudflarecloudfront/">Click</a>
 
-= Is this plugin compatible with WP-Polls? =
-Yes, it is compatible with WP-Polls 100%.
-
-= Is this plugin compatible with Bulletproof Security? =
-Yes, it is compatible with Bulletproof Security 100%.
-
-= Is this plugin compatible with Wordfence Security? =
-Yes, it is compatible with Wordfence Security 100%.
-
 = Is this plugin compatible with qTranslate? =
 Yes, it is compatible with qTranslate 100%.
-
-= Is this plugin compatible with WPtouch Mobile? =
-Yes, it is compatible with WPtouch Mobile.
-
-= Is this plugin compatible with WP-PostRatings? =
-Yes, it is compatible with WP-PostRatings.
-
-= Is this plugin compatible with AdRotate? =
-No, it is NOT compatible with AdRotate.
 
 = Is this plugin compatible with WP Hide & Security Enhancer? =
 Yes, it is compatible with WP Hide & Security Enhancer.
@@ -277,11 +388,9 @@ Yes, it is compatible with WP Hide & Security Enhancer.
 = Is this plugin compatible with WP-PostViews? =
 Yes, it is compatible with WP-PostViews. The current post views appear on the admin panel. The visitors cannot see the current post views. The developer of WP-PostViews needs to fix this issue.
 
-= Is this plugin compatible with MobilePress? =
-No, it is NOT compatible with MobilePress. We advise WPtouch Mobile.
-
 = Is this plugin compatible with WooCommerce Themes? =
 Yes, it is compatible with WooCommerce Themes 100%.
+
 
 == Upgrade notice ==
 ....

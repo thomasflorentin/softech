@@ -244,18 +244,8 @@
 				}
 
 				// to exclude admin users
-				foreach ((array)$_COOKIE as $cookie_key => $cookie_value){
-					if(preg_match("/wordpress_logged_in/i", $cookie_key)){
-						$users_groups = get_users(array("role" => "administrator", "fields" => array("user_login")));
-						
-						foreach ($users_groups as $user_key => $user_value) {
-							if(preg_match("/^".preg_quote($user_value->user_login, "/")."/", $cookie_value)){
-								ob_start(array($this, "cdn_rewrite"));
-
-								return 0;
-							}
-						}
-					}
+				if($this->is_user_admin()){
+					return 0;
 				}
 
 				// to check comment author
@@ -287,6 +277,8 @@
 					if(preg_match("/\?amp(\=1)?/i", $_SERVER["REQUEST_URI"])){
 						//
 					}else if(defined('WPFC_CACHE_QUERYSTRING') && WPFC_CACHE_QUERYSTRING){
+						//
+					}else if(isset($_GET["wc-api"]) && $_GET["wc-api"]){
 						//
 					}else{
 						ob_start(array($this, "cdn_rewrite"));
@@ -336,6 +328,14 @@
 					}
 				}
 
+				if(isset($_SERVER["DOCUMENT_ROOT"]) && preg_match("/bitnami/", $_SERVER["DOCUMENT_ROOT"])){
+					// to disable cache for the IP based urls on the bitnami servers
+					// /opt/bitnami/apps/wordpress/htdocs
+					if(preg_match("/(?:[0-9]{1,3}\.){3}[0-9]{1,3}/", get_option("home"))){
+						return 0;
+					}
+				}
+
 				if(preg_match("/www\./i", get_option("home")) && !preg_match("/www\./i", $_SERVER['HTTP_HOST'])){
 					return 0;
 				}
@@ -345,6 +345,8 @@
 				}
 
 				if($this->exclude_page()){
+					ob_start(array($this, "cdn_rewrite"));
+					
 					//echo "<!-- Wp Fastest Cache: Exclude Page -->"."\n";
 					return 0;
 				}
@@ -377,6 +379,12 @@
 					}
 
 					if($content = @file_get_contents($this->cacheFilePath."index.".$file_extension)){
+
+						if($file_extension == "html"){
+							header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($this->cacheFilePath."index.".$file_extension)).' GMT', true, 200);
+						}
+
+
 						if(defined('WPFC_REMOVE_VIA_FOOTER_COMMENT') && WPFC_REMOVE_VIA_FOOTER_COMMENT){
 							$via_php = "";
 						}
@@ -434,6 +442,32 @@
 					}
 				}
 			}
+		}
+
+		public function is_user_admin(){
+			global $wpdb;
+
+			foreach ((array)$_COOKIE as $cookie_key => $cookie_value){
+				if(preg_match("/wordpress_logged_in/i", $cookie_key)){
+					$username = preg_replace("/^([^\|]+)\|.+/", "$1", $cookie_value);
+					break;
+				}
+			}
+
+			if(isset($username) && $username){			
+				$res = $wpdb->get_var("SELECT `$wpdb->users`.`ID`, `$wpdb->users`.`user_login`, `$wpdb->usermeta`.`meta_key`, `$wpdb->usermeta`.`meta_value` 
+									   FROM `$wpdb->users` 
+									   INNER JOIN `$wpdb->usermeta` 
+									   ON `$wpdb->users`.`user_login` = \"$username\" AND 
+									   `$wpdb->usermeta`.`meta_key` LIKE \"%_user_level\" AND 
+									   `$wpdb->usermeta`.`meta_value` = \"10\" AND 
+									   `$wpdb->users`.`ID` = `$wpdb->usermeta`.user_id ;"
+									);
+
+				return $res;
+			}
+
+			return false;
 		}
 
 		public function exclude_current_page($some = true){
@@ -521,7 +555,8 @@
 
 		public function exclude_page($buffer = false){
 			$preg_match_rule = "";
-			$request_url = urldecode(trim($_SERVER["REQUEST_URI"], "/"));
+			//$request_url = urldecode(trim($_SERVER["REQUEST_URI"], "/"));
+			$request_url = urldecode($_SERVER["REQUEST_URI"]);
 
 			if($this->exclude_rules){
 
@@ -534,18 +569,24 @@
 						}
 					}else if(isset($value->prefix) && $value->prefix && ($value->type == "page")){
 						$value->content = trim($value->content);
-						$value->content = trim($value->content, "/");
+						//$value->content = trim($value->content, "/");
 
 						if($buffer && preg_match("/^(homepage|category|tag|post|page|archive|attachment)$/", $value->prefix)){
 							if(preg_match('/<\!--WPFC_PAGE_TYPE_'.$value->prefix.'-->/i', $buffer)){
 								return true;
 							} 
 						}else if($value->prefix == "exact"){
+							$request_url = trim($request_url, "/");
+							$value->content = trim($value->content, "/");
+
 							if(strtolower($value->content) == strtolower($request_url)){
 								return true;	
 							}
 						}else{
 							if($value->prefix == "startwith"){
+								$request_url = ltrim($request_url, "/");
+								$value->content = ltrim($value->content, "/");
+
 								$preg_match_rule = "^".preg_quote($value->content, "/");
 							}else if($value->prefix == "contain"){
 								$preg_match_rule = preg_quote($value->content, "/");
@@ -644,7 +685,8 @@
 				return true;
 			}
 
-			if(preg_match("/<body id\=\"error-page\">\s*<p>[^\>]+<\/p>\s*<\/body>/i", $buffer)){
+			//to exclude "There has been a critical error on this website" page
+			if(preg_match("/<body\sid\=\"error-page\">\s*<div\sclass\=\"wp-die-message\">/i", $buffer)){
 				return true;
 			}
 		}
@@ -669,12 +711,38 @@
 				}
 			}
 
+			// for Divi Theme
+			if(defined('DONOTCACHEPAGE') && (get_template() == "Divi")){
+				if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){
+					// /?wc-ajax=dgwt_wcas_ajax_search&s=keyword&l=en
+					return $buffer;
+				}
+
+				return $buffer."<!-- DONOTCACHEPAGE is defined as TRUE -->";
+			}
+
+
 			if($this->exclude_page($buffer)){
-				$buffer = preg_replace('/<\!--WPFC_PAGE_TYPE_[a-z]+-->/i', '', $buffer);	
+				$buffer = preg_replace('/<\!--WPFC_PAGE_TYPE_[a-z]+-->/i', '', $buffer);
+
+				$buffer = $this->cdn_rewrite($buffer);
+
 				return $buffer;
 			}
 
 			$buffer = preg_replace('/<\!--WPFC_PAGE_TYPE_[a-z]+-->/i', '', $buffer);
+
+
+			if($this->is_html()){
+				$tmp_buffer = (string) apply_filters('wpfc_buffer_callback_filter', $buffer, "html", $this->cacheFilePath);
+
+				if(!$tmp_buffer){
+					return $buffer;
+				}else{
+					$buffer = $tmp_buffer;
+				}
+			}
+
 
 			if($this->exclude_current_page_text){
 				return $buffer.$this->exclude_current_page_text;
@@ -829,6 +897,14 @@
 
 					$content = $this->fix_pre_tag($content, $buffer);
 
+					if(preg_match("/<link[^\>]+href\s*\=\s*[\'\"][^\"\']+\.\.[\"\'][^\>]+>/", $content)){
+						/*
+						to check that resources have been successfully optimized
+						<link rel='stylesheet'  href='//site.com/wp-content/cache/wpfc-minified/895p0t5d/..' media='all' />
+						*/
+						return $buffer."<!-- Cache has NOT been created due to optimized resource -->";
+					}
+
 					if($this->cacheFilePath){
 						if($this->is_html()){
 							$this->createFolder($this->cacheFilePath, $content);
@@ -864,13 +940,23 @@
 
 				if(isset($pre_content[0]) && isset($pre_content[0][0])){
 					foreach ($pre_content[0] as $key => $value){
-						/*
-						location ~ / {
-						    set $path /path/$1/index.html;
-						}
-						*/
 						if(isset($pre_buffer[0][$key])){
+							/*
+							location ~ / {
+							    set $path /path/$1/index.html;
+							}
+							*/
 							$pre_buffer[0][$key] = preg_replace('/\$(\d)/', '\\\$$1', $pre_buffer[0][$key]);
+
+							/*
+							\\\
+							*/
+							$pre_buffer[0][$key] = preg_replace('/\\\\\\\\\\\/', '\\\\\\\\\\\\\\', $pre_buffer[0][$key]);
+
+							/*
+							\\
+							*/
+							$pre_buffer[0][$key] = preg_replace('/\\\\\\\\/', '\\\\\\\\\\', $pre_buffer[0][$key]);
 
 							$content = preg_replace("/".preg_quote($value, "/")."/", $pre_buffer[0][$key], $content);
 						}
@@ -883,7 +969,7 @@
 
 		public function cdn_rewrite($content){
 			if($this->cdn){
-				$content = preg_replace_callback("/(srcset|src|href|data-vc-parallax-image|data-bg|data-fullurl|data-mobileurl|data-img-url|data-cvpsrc|data-cvpset|data-thumb|data-bg-url|data-large_image|data-lazyload|data-lazy|data-source-url|data-srcsmall|data-srclarge|data-srcfull|data-slide-img|data-lazy-original)\s{0,2}\=\s{0,2}[\'\"]([^\'\"]+)[\'\"]/i", array($this, 'cdn_replace_urls'), $content);
+				$content = preg_replace_callback("/(srcset|src|href|data-vc-parallax-image|data-bg|data-bg-webp|data-fullurl|data-mobileurl|data-img-url|data-cvpsrc|data-cvpset|data-thumb|data-bg-url|data-large_image|data-lazyload|data-lazy|data-source-url|data-srcsmall|data-srclarge|data-srcfull|data-slide-img|data-lazy-original)\s{0,2}\=\s{0,2}[\'\"]([^\'\"]+)[\'\"]/i", array($this, 'cdn_replace_urls'), $content);
 
 				//url()
 				$content = preg_replace_callback("/(url)\(([^\)\>]+)\)/i", array($this, 'cdn_replace_urls'), $content);
@@ -928,7 +1014,7 @@
 				return false;
 			}
 
-			if(preg_match('/<html[^\>]*>/si', $buffer) && preg_match('/<body[^\>]*>/si', $buffer)){
+			if(preg_match('/<html[^\>]*>/si', $buffer) && preg_match('/<body[^\>]*>/si', $buffer) && preg_match('/<\/body>/si', $buffer)){
 				return false;
 			}
 			// if(strlen($buffer) > 10){
@@ -1018,72 +1104,93 @@
 				}
 			}
 
+			if (is_user_logged_in() || $this->isCommenter()){
+				$create = false;
+			}
+
 			if($create){
-				if (!is_user_logged_in() && !$this->isCommenter()){
-					if(!is_dir($cachFilePath)){
-						if(is_writable($this->getWpContentDir()) || ((is_dir($this->getWpContentDir()."/cache")) && (is_writable($this->getWpContentDir()."/cache")))){
-							if (@mkdir($cachFilePath, 0755, true)){
+				
+				if(!is_dir($cachFilePath)){
+					if(is_writable($this->getWpContentDir()) || ((is_dir($this->getWpContentDir("/cache"))) && (is_writable($this->getWpContentDir("/cache"))))){
+						if (@mkdir($cachFilePath, 0755, true)){
 
-								$buffer = (string) apply_filters('wpfc_buffer_callback_filter', $buffer, $extension);
+							if($extension == "html"){
+			   					if(!file_exists($this->getWpContentDir("/cache/index.html"))){
+			   						@file_put_contents($this->getWpContentDir("/cache/index.html"), "");
+			   					}
+			   				}else{
 
-								file_put_contents($cachFilePath."/".$file_name.$extension, $buffer);
-								
-								if(class_exists("WpFastestCacheStatics")){
-									if($update_db_statistic && !preg_match("/After\sCache\sTimeout/i", $_SERVER['HTTP_USER_AGENT'])){
-										if(preg_match("/wpfc\-mobile\-cache/", $cachFilePath)){
-											$extension = "mobile";
-										}
-										
-						   				$cache_statics = new WpFastestCacheStatics($extension, strlen($buffer));
-						   				$cache_statics->update_db();
-									}
-				   				}
+			   					if(!file_exists($this->getWpContentDir("/cache/wpfc-minified/index.html"))){
+			   						if(!is_dir($this->getWpContentDir("/cache/wpfc-minified/"))){
+			   							@mkdir($this->getWpContentDir("/cache/wpfc-minified/"), 0755, true);
+			   						}
 
-				   				if($extension == "html"){
-				   					if(!file_exists(WPFC_WP_CONTENT_DIR."/cache/index.html")){
-				   						@file_put_contents(WPFC_WP_CONTENT_DIR."/cache/index.html", "");
-				   					}
-				   				}else{
-				   					if(!file_exists(WPFC_WP_CONTENT_DIR."/cache/wpfc-minified/index.html")){
-				   						@file_put_contents(WPFC_WP_CONTENT_DIR."/cache/wpfc-minified/index.html", "");
-				   					}
-				   				}
+			   						if(is_dir($this->getWpContentDir("/cache/wpfc-minified/"))){
+			   							@file_put_contents($this->getWpContentDir("/cache/wpfc-minified/index.html"), "");
+			   						}
+			   					}
 
-							}else{
-							}
-						}else{
-
-						}
-					}else{
-						if(file_exists($cachFilePath."/".$file_name.$extension)){
-
-						}else{
-							$buffer = (string) apply_filters('wpfc_buffer_callback_filter', $buffer, $extension);
-							
-							file_put_contents($cachFilePath."/".$file_name.$extension, $buffer);
-							
-							if(class_exists("WpFastestCacheStatics")){
-								if($update_db_statistic && !preg_match("/After\sCache\sTimeout/i", $_SERVER['HTTP_USER_AGENT'])){
-									if(preg_match("/wpfc\-mobile\-cache/", $cachFilePath)){
-										$extension = "mobile";
-									}
-
-					   				$cache_statics = new WpFastestCacheStatics($extension, strlen($buffer));
-					   				$cache_statics->update_db();
-								}
 			   				}
+
 						}
 					}
 				}
+
+				if(is_dir($cachFilePath)){
+					if(!file_exists($cachFilePath."/".$file_name.$extension)){
+
+						if($extension != "html"){
+							$buffer = (string) apply_filters('wpfc_buffer_callback_filter', $buffer, $extension, $cachFilePath);
+						}
+
+						file_put_contents($cachFilePath."/".$file_name.$extension, $buffer);
+						
+						if(class_exists("WpFastestCacheStatics")){
+							if($update_db_statistic && !preg_match("/After\sCache\sTimeout/i", $_SERVER['HTTP_USER_AGENT'])){
+								if(preg_match("/wpfc\-mobile\-cache/", $cachFilePath)){
+									$extension = "mobile";
+								}
+
+				   				$cache_statics = new WpFastestCacheStatics($extension, strlen($buffer));
+				   				$cache_statics->update_db();
+							}
+		   				}
+					
+					}
+
+				}
+
 			}elseif($extension == "html"){
 				$this->err = "Buffer is empty so the cache cannot be created";
 			}
 		}
 
 		public function is_amp($content){
+			global $redux_builder_amp;
+			$action = false;
 			$request_uri = trim($_SERVER["REQUEST_URI"], "/");
 
-			if(preg_match("/^amp/", $request_uri) || preg_match("/\/amp\//", $request_uri) || preg_match("/amp$/", $request_uri)){
+			if(preg_match("/^amp/", $request_uri)){
+				$action = true;
+			}
+
+			if(preg_match("/amp$/", $request_uri)){
+				$action = true;
+			}
+
+			if(preg_match("/\/amp\//", $request_uri)){
+				$action = true;
+			}
+
+			if(preg_match("/\?amp\=1$/", $request_uri)){
+				$action = true;
+			}
+
+			if(isset($redux_builder_amp) && isset($redux_builder_amp['ampforwp-amp-takeover']) && ($redux_builder_amp['ampforwp-amp-takeover'] == true)){
+				$action = true;
+			}
+
+			if($action){
 				if(preg_match("/<html[^\>]+amp[^\>]*>/i", $content)){
 					return true;
 				}
