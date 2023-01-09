@@ -202,7 +202,7 @@ final class ITSEC_Lib {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return string|bool server type the user is using of false if undetectable.
+	 * @return string Server type the user is using. Falls back to 'apache'.
 	 */
 	public static function get_server() {
 		require_once( ITSEC_Core::get_core_dir() . '/lib/class-itsec-lib-utility.php' );
@@ -287,9 +287,9 @@ final class ITSEC_Lib {
 	/**
 	 * Gets the list of banned IPs.
 	 *
+	 * @return string[]
 	 * @deprecated 6.7.0
 	 *
-	 * @return string[]
 	 */
 	public static function get_blacklisted_ips() {
 		_deprecated_function( __METHOD__, '6.7.0', \iThemesSecurity\Ban_Hosts\Multi_Repository::class );
@@ -310,12 +310,12 @@ final class ITSEC_Lib {
 	/**
 	 * Determines whether a given IP address is blacklisted.
 	 *
-	 * @deprecated 6.7.0
-	 *
 	 * @param string $ip              ip to check (can be in CIDR notation)
 	 * @param array  $blacklisted_ips ip list to compare to if not yet saved to options
 	 *
 	 * @return boolean true if blacklisted or false
+	 * @deprecated 6.7.0
+	 *
 	 */
 	public static function is_ip_blacklisted( $ip = null, $blacklisted_ips = null ) {
 		_deprecated_function( __METHOD__, '6.7.0', 'ITSEC_Lib::is_ip_banned' );
@@ -744,6 +744,12 @@ final class ITSEC_Lib {
 	 */
 	public static function get_lock( $name, $expires_in = 30 ) {
 
+		$pre_check = apply_filters( 'itsec_pre_get_lock', null, $name, $expires_in );
+
+		if ( null !== $pre_check ) {
+			return $pre_check;
+		}
+
 		/** @var \wpdb $wpdb */
 		global $wpdb;
 		$main_options = $wpdb->base_prefix . 'options';
@@ -813,6 +819,11 @@ final class ITSEC_Lib {
 	 * @param string $name The lock name.
 	 */
 	public static function release_lock( $name ) {
+		$pre_check = apply_filters( 'itsec_pre_release_lock', null, $name );
+
+		if ( null !== $pre_check ) {
+			return;
+		}
 
 		$lock = "itsec-lock-{$name}";
 
@@ -983,18 +994,43 @@ final class ITSEC_Lib {
 	 *
 	 * @author Modified from ticket #25331
 	 *
-	 * @param int    $timestamp
-	 * @param string $format Specify the format. If blank, will default to the date and time format settings.
+	 * @param int|DateTimeInterface $time   The time to use.
+	 * @param string                $format Specify the format. If blank, will default to the date and time format settings.
 	 *
 	 * @return string
 	 */
-	public static function date_format_i18n_and_local_timezone( $timestamp, $format = '' ) {
+	public static function date_format_i18n_and_local_timezone( $time, $format = '' ) {
+		if ( $time instanceof \DateTimeInterface ) {
+			$time = $time->getTimestamp();
+		}
 
 		if ( ! $format ) {
 			$format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
 		}
 
-		return date_i18n( $format, strtotime( get_date_from_gmt( date( 'Y-m-d H:i:s', $timestamp ) ) ) );
+		return date_i18n( $format, strtotime( get_date_from_gmt( date( 'Y-m-d H:i:s', $time ) ) ) );
+	}
+
+	/**
+	 * Displays a human time diff, or a formatted date if the time is too far in the past.
+	 *
+	 * @param int    $from   Unix timestamp from which the difference begins.
+	 * @param int    $to     Optional. Unix timestamp to end the time difference. Default becomes time() if not set.
+	 * @param string $format The date format to use. If omitted, the configured date_format is used instead.
+	 *
+	 * @return string
+	 */
+	public static function human_time_diff_or_date( int $from, int $to = 0, string $format = '' ): string {
+		$to   = $to ?: time();
+		$diff = abs( $to - $from );
+
+		if ( $diff < DAY_IN_SECONDS ) {
+			return sprintf( __( '%s ago', 'default' ), human_time_diff( $from, $to ) );
+		}
+
+		$format = $format ?: get_option( 'date_format' );
+
+		return gmdate( $format, $from );
 	}
 
 	/**
@@ -1034,10 +1070,11 @@ final class ITSEC_Lib {
 	 * @param array  $array
 	 * @param string $key
 	 * @param mixed  $default
+	 * @param string $delimeter
 	 *
 	 * @return mixed
 	 */
-	public static function array_get( $array, $key, $default = null ) {
+	public static function array_get( $array, $key, $default = null, $delimeter = '.' ) {
 		if ( ! is_array( $array ) ) {
 			return $default;
 		}
@@ -1046,11 +1083,11 @@ final class ITSEC_Lib {
 			return $array[ $key ];
 		}
 
-		if ( strpos( $key, '.' ) === false ) {
+		if ( strpos( $key, $delimeter ) === false ) {
 			return isset( $array[ $key ] ) ? $array[ $key ] : $default;
 		}
 
-		foreach ( explode( '.', $key ) as $segment ) {
+		foreach ( explode( $delimeter, $key ) as $segment ) {
 			if ( is_array( $array ) && isset( $array[ $segment ] ) ) {
 				$array = $array[ $segment ];
 			} else {
@@ -1089,6 +1126,86 @@ final class ITSEC_Lib {
 		$modify[ array_shift( $keys ) ] = $value;
 
 		return $array;
+	}
+
+	/**
+	 * Removes items at the given locations from an array.
+	 *
+	 * This accepts a dotted path with '*' to represent wildcards.
+	 *
+	 * @param array  $array
+	 * @param string $dotted_path
+	 *
+	 * @return array
+	 */
+	public static function array_remove( array $array, string $dotted_path ): array {
+		$paths = explode( '.', $dotted_path );
+
+		return self::_array_remove( $array, $paths );
+	}
+
+	private static function _array_remove( array $array, array $paths ): array {
+		if ( ! $array ) {
+			return $array;
+		}
+
+		$path = array_shift( $paths );
+
+		if ( '*' === $path ) {
+			foreach ( $array as $k => $v ) {
+				if ( is_array( $v ) ) {
+					$array[ $k ] = self::_array_remove( $v, $paths );
+				} elseif ( ! $paths ) {
+					// If the last dotted path is a wildcard,
+					// remove all elements.
+					unset( $array[ $k ] );
+				}
+			}
+		} elseif ( isset( $array[ $path ] ) ) {
+			if ( is_array( $array[ $path ] ) && $paths ) {
+				$array[ $path ] = self::_array_remove( $array[ $path ], $paths );
+			} else {
+				unset( $array[ $path ] );
+			}
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Removes any number of items from a list.
+	 *
+	 * Values are loosely compared.
+	 *
+	 * @param array $array
+	 * @param       ...$values
+	 *
+	 * @return array
+	 */
+	public static function array_pull( array $array, ...$values ): array {
+		return array_values( array_diff( $array, $values ) );
+	}
+
+	/**
+	 * Merges two arrays recursively such that only arrays are deeply merged.
+	 *
+	 * @param array $array1
+	 * @param array $array2
+	 *
+	 * @return array
+	 */
+	public static function array_merge_recursive_distinct( array $array1, array $array2 ): array {
+		$merged = $array1;
+
+		foreach ( $array2 as $key => $value ) {
+			if ( is_array( $value ) && isset( $merged[ $key ] ) && is_array( $merged[ $key ] ) ) {
+				$merged[ $key ] = self::array_merge_recursive_distinct( $merged[ $key ], $value );
+			} else {
+				$merged[ $key ] = $value;
+			}
+		}
+
+		return $merged;
 	}
 
 	public static function print_r( $data, $args = array() ) {
@@ -1353,6 +1470,30 @@ final class ITSEC_Lib {
 	}
 
 	/**
+	 * Gets the first item from an array.
+	 *
+	 * @param array $arr
+	 * @param mixed $default
+	 *
+	 * @return mixed
+	 */
+	public static function first( array $arr, $default = null ) {
+		return $arr[ self::array_key_first( $arr ) ] ?? $default;
+	}
+
+	/**
+	 * Gets the last item from an array.
+	 *
+	 * @param array $arr
+	 * @param mixed $default
+	 *
+	 * @return mixed
+	 */
+	public static function last( array $arr, $default = null ) {
+		return $arr[ self::array_key_last( $arr ) ] ?? $default;
+	}
+
+	/**
 	 * Plucks a certain field out of each item in the list.
 	 *
 	 * Similar to {@see wp_list_pluck()} but it supports using methods.
@@ -1407,6 +1548,24 @@ final class ITSEC_Lib {
 	}
 
 	/**
+	 * Finds the first item in a list matching the given predicate.
+	 *
+	 * @param iterable $list
+	 * @param callable $predicate
+	 *
+	 * @return mixed|null
+	 */
+	public static function find_where( iterable $list, callable $predicate ) {
+		foreach ( $list as $item ) {
+			if ( $predicate( $item ) ) {
+				return $item;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Array unique implementation that allows for non-scalar values.
 	 *
 	 * Will compare elements using `serialize()`.
@@ -1414,16 +1573,21 @@ final class ITSEC_Lib {
 	 * Keys are preserved. If a numeric array is given, the array will be re-indexed.
 	 *
 	 * @param array $array
+	 * @param bool  $stabilize If true, stabilizes the values first according to JSON semantics.
 	 *
 	 * @return array
 	 */
-	public static function non_scalar_array_unique( $array ) {
+	public static function non_scalar_array_unique( $array, $stabilize = false ) {
 
 		$is_numeric = wp_is_numeric_array( $array );
 
 		$hashes = array();
 
 		foreach ( $array as $key => $value ) {
+			if ( $stabilize ) {
+				$value = rest_stabilize_value( $value );
+			}
+
 			$hash = serialize( $value );
 
 			if ( isset( $hashes[ $hash ] ) ) {
@@ -1445,7 +1609,7 @@ final class ITSEC_Lib {
 	 *
 	 * @param string $header
 	 *
-	 * @return string[]
+	 * @return array[]
 	 * @example Parsing the Accept-Language header.
 	 *
 	 * "en-US,en;q=0.9,de;q=0.8" transforms to:
@@ -2182,6 +2346,23 @@ final class ITSEC_Lib {
 	}
 
 	/**
+	 * Get info used to help evaluate requirements according to
+	 * {@see ITSEC_Lib::evaluate_requirements()}.
+	 *
+	 * @return array[]
+	 */
+	public static function get_requirements_info(): array {
+		return [
+			'server' => [
+				'php'        => explode( '-', PHP_VERSION )[0],
+				'extensions' => [
+					'OpenSSL' => self::is_func_allowed( 'openssl_verify' ),
+				],
+			]
+		];
+	}
+
+	/**
 	 * Evaluate whether this site passes the given requirements.
 	 *
 	 * @param array $requirements
@@ -2193,7 +2374,7 @@ final class ITSEC_Lib {
 			'type'                 => 'object',
 			'additionalProperties' => false,
 			'properties'           => [
-				'version' => [
+				'version'       => [
 					'type'                 => 'object',
 					'additionalProperties' => false,
 					'properties'           => [
@@ -2207,13 +2388,43 @@ final class ITSEC_Lib {
 						],
 					],
 				],
+				'ssl'           => [
+					'type' => 'boolean',
+				],
+				'feature-flags' => [
+					'type'  => 'array',
+					'items' => [
+						'type' => 'string',
+					],
+				],
+				'multisite'     => [
+					'type' => 'string',
+					'enum' => [ 'enabled', 'disabled' ],
+				],
+				'server'        => [
+					'type'       => 'object',
+					'properties' => [
+						'php'        => [
+							'type' => 'string',
+						],
+						'extensions' => [
+							'type'  => 'array',
+							'items' => [
+								'type' => 'string',
+								'enum' => [ 'OpenSSL' ],
+							],
+						],
+					],
+				],
 			],
 		];
 
-		$valid_requirements = rest_validate_value_from_schema( $requirements, $schema );
+		if ( ITSEC_Core::is_development() ) {
+			$valid_requirements = rest_validate_value_from_schema( $requirements, $schema );
 
-		if ( is_wp_error( $valid_requirements ) ) {
-			return $valid_requirements;
+			if ( is_wp_error( $valid_requirements ) ) {
+				return $valid_requirements;
+			}
 		}
 
 		$error = new WP_Error();
@@ -2227,10 +2438,73 @@ final class ITSEC_Lib {
 					if ( version_compare( ITSEC_Core::get_plugin_version(), $version, '<' ) ) {
 						$error->add(
 							'version',
-							sprintf( __( 'Must be running at least version %s of iThemes Security.', 'better-wp-security' ), $version )
+							sprintf( __( 'You must be running at least version %s of iThemes Security.', 'better-wp-security' ), $version )
 						);
 					}
 
+					break;
+				case 'ssl':
+					if ( $requirement !== is_ssl() ) {
+						$error->add(
+							'ssl',
+							$requirement ? __( 'Your site must support SSL.', 'better-wp-security' ) : __( 'Your site must not support SSL.', 'better-wp-security' )
+						);
+					}
+					break;
+				case 'feature-flags':
+					foreach ( $requirement as $flag ) {
+						if ( ! ITSEC_Lib_Feature_Flags::is_enabled( $flag ) ) {
+							$error->add(
+								'feature-flags',
+								sprintf(
+									__( 'The \'%s\' feature flag must be enabled.', 'better-wp-security' ),
+									( ITSEC_Lib_Feature_Flags::get_flag_config( $flag )['title'] ?? $flag ) ?: $flag
+								)
+							);
+						}
+					}
+					break;
+				case 'multisite':
+					if ( $requirement === 'enabled' && ! is_multisite() ) {
+						$error->add(
+							'multisite',
+							__( 'Multisite must be enabled.', 'better-wp-security' )
+						);
+					} elseif ( $requirement === 'disabled' && is_multisite() ) {
+						$error->add(
+							'multisite',
+							__( 'Multisite is not supported.', 'better-wp-security' )
+						);
+					}
+					break;
+				case 'server':
+					$info = self::get_requirements_info();
+
+					if ( isset( $requirement['php'] ) && version_compare( $info['server']['php'], $requirement['php'], '<' ) ) {
+						$error->add( 'server', sprintf( __( 'You must be running PHP version %s or later.', 'better-wp-security' ), $requirement['php'] ) );
+					}
+
+					$missing = array_filter( $requirement['extensions'] ?? [], function ( $extension ) use ( $info ) {
+						return empty( $info['server']['extensions'][ $extension ] );
+					} );
+
+					if ( $missing ) {
+						if ( count( $missing ) === 1 ) {
+							$message = sprintf( __( 'The %s PHP extension is required.', 'better-wp-security' ), ITSEC_Lib::first( $missing ) );
+						} else {
+							$message = wp_sprintf(
+								_n(
+									'The following PHP extension is required: %l.',
+									'The following PHP extensions are required: %l.',
+									count( $missing ),
+									'better-wp-security'
+								),
+								$missing
+							);
+						}
+
+						$error->add( 'server', $message );
+					}
 					break;
 			}
 		}
@@ -2317,5 +2591,167 @@ final class ITSEC_Lib {
 	 */
 	public static function url_safe_b64_encode( $input ) {
 		return str_replace( '=', '', strtr( base64_encode( $input ), '+/', '-_' ) );
+	}
+
+	/**
+	 * Compares the WordPress version with the given version.
+	 *
+	 * @param string $version   The version to compare with.
+	 * @param string $operator  The operator.
+	 * @param bool   $allow_dev Whether to treat dev versions as stable.
+	 *
+	 * @return bool
+	 */
+	public static function wp_version_compare( $version, $operator, $allow_dev = true ) {
+		global $wp_version;
+
+		if ( $allow_dev ) {
+			list( $wp_version ) = explode( '-', $wp_version );
+		}
+
+		return version_compare( $wp_version, $version, $operator );
+	}
+
+	/**
+	 * Checks if the WordPress version is at least the given version.
+	 *
+	 * @param string $version   The version to check WP for.
+	 * @param bool   $allow_dev Whether to treat dev versions as stable.
+	 *
+	 * @return bool
+	 */
+	public static function is_wp_version_at_least( $version, $allow_dev = true ) {
+		return static::wp_version_compare( $version, '>=', $allow_dev );
+	}
+
+	/**
+	 * Gets the WordPress login URL.
+	 *
+	 * @param string $action   A particular login action to use.
+	 * @param string $redirect Where to redirect the user to after login.
+	 * @param string $scheme   The scheme to use. Accepts `login_post` for form submissions.
+	 *
+	 * @return string
+	 */
+	public static function get_login_url( $action = '', $redirect = '', $scheme = 'login' ) {
+		if ( 'login_post' === $scheme || ( $action && 'login' !== $action ) ) {
+			$url = 'wp-login.php';
+
+			if ( $action ) {
+				$url = add_query_arg( 'action', urlencode( $action ), $url );
+			}
+
+			if ( $redirect ) {
+				$url = add_query_arg( 'redirect_to', urlencode( $redirect ), $url );
+			}
+
+			$url = site_url( $url, $scheme );
+		} else {
+			$url = wp_login_url( $redirect );
+
+			if ( $action ) {
+				$url = add_query_arg( 'action', urlencode( $action ), $url );
+			}
+		}
+
+		if ( function_exists( 'is_wpe' ) && is_wpe() ) {
+			$url = add_query_arg( 'wpe-login', 'true', $url );
+		}
+
+		return apply_filters( 'itsec_login_url', $url, $action, $redirect, $scheme );
+	}
+
+	/**
+	 * Extends a service definition, ignoring if the service has been frozen.
+	 *
+	 * @param \iThemesSecurity\Strauss\Pimple\Container $c
+	 * @param string            $id
+	 * @param callable          $extend
+	 *
+	 * @return bool
+	 */
+	public static function extend_if_able( \iThemesSecurity\Strauss\Pimple\Container $c, string $id, callable $extend ): bool {
+		try {
+			$c->extend( $id, $extend );
+
+			return true;
+		} catch ( \iThemesSecurity\Strauss\Pimple\Exception\FrozenServiceException $e ) {
+			return false;
+		}
+	}
+
+	/**
+	 * Resolve JSON Schema refs.
+	 *
+	 * @param array $schema
+	 *
+	 * @return array
+	 */
+	public static function resolve_schema_refs( array $schema ): array {
+		if ( isset( $schema['definitions'] ) ) {
+			array_walk( $schema, [ static::class, 'resolve_ref' ], $schema['definitions'] );
+		}
+
+		return $schema;
+	}
+
+	/**
+	 * Resolves $ref entries at any point in the config.
+	 *
+	 * Currently, only a simplified form of JSON Pointers are supported where `/` is the only
+	 * allowed control character.
+	 *
+	 * Additionally, the `$ref` keyword must start with `#/definitions`.
+	 *
+	 * @param mixed  $value       The incoming value.
+	 * @param string $key         The array key.
+	 * @param array  $definitions The shared definitions.
+	 */
+	private static function resolve_ref( &$value, $key, $definitions ) {
+		if ( ! is_array( $value ) ) {
+			return;
+		}
+
+		if ( isset( $value['$ref'] ) ) {
+			$ref   = str_replace( '#/definitions/', '', $value['$ref'] );
+			$value = \ITSEC_Lib::array_get( $definitions, $ref, null, '/' );
+
+			return;
+		}
+
+		array_walk( $value, [ static::class, 'resolve_ref' ], $definitions );
+	}
+
+	/**
+	 * Generates a v4 UUID using a CSPRNG.
+	 *
+	 * @return string
+	 */
+	public static function generate_uuid4(): string {
+		return sprintf(
+			'%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+			wp_rand( 0, 0xffff ),
+			wp_rand( 0, 0xffff ),
+			wp_rand( 0, 0xffff ),
+			wp_rand( 0, 0x0fff ) | 0x4000,
+			wp_rand( 0, 0x3fff ) | 0x8000,
+			wp_rand( 0, 0xffff ),
+			wp_rand( 0, 0xffff ),
+			wp_rand( 0, 0xffff )
+		);
+	}
+
+	public static function recursively_json_serialize( $value ) {
+		if ( $value instanceof JsonSerializable ) {
+			return $value->jsonSerialize();
+		}
+
+		if ( is_array( $value ) ) {
+			foreach ( $value as $k => $v ) {
+				$value[ $k ] = self::recursively_json_serialize( $v );
+			}
+		}
+
+		return $value;
 	}
 }
