@@ -44,12 +44,51 @@ class ITSEC_Site_Scanner_Mail {
 		$mail->set_subject( static::get_scan_subject( $code ) );
 		$mail->set_recipients( $nc->get_recipients( 'malware-scheduling' ) );
 
+		$issues = $scan->count( Status::WARN );
+		$errors = count( $scan->get_errors() );
+		$lead = '';
+
+		if ( $issues ) {
+			$lead = sprintf( esc_html(
+				_n(
+					'The scheduled site scan found %1$s issue when scanning %2$s.',
+					'The scheduled site scan found %1$s issues when scanning %2$s.',
+					$issues,
+					'better-wp-security'
+				)
+			), number_format_i18n( $issues ), $scan->get_url() );
+		}
+
+		if ( $errors ) {
+			if ( $lead ) {
+				$lead .= ' ' . sprintf( esc_html(
+						_n(
+							'The scanner encountered %s additional error.',
+							'The scanner encountered %s additional errors.',
+							$errors,
+							'better-wp-security'
+						)
+					), number_format_i18n( $errors ) );
+			} else {
+				$lead = sprintf( esc_html(
+					_n(
+						'The scheduled site scan encountered %1$s error when scanning %2$s.',
+						'The scheduled site scan encountered %1$s errors when scanning %2$s.',
+						$errors,
+						'better-wp-security'
+					)
+				), number_format_i18n( $errors ), $scan->get_url() );
+			}
+		}
+
 		$mail->add_header(
 			esc_html__( 'Site Scan', 'better-wp-security' ),
 			sprintf(
 				esc_html__( 'Site Scan for %s', 'better-wp-security' ),
 				'<b>' . ITSEC_Lib::date_format_i18n_and_local_timezone( $scan->get_time()->getTimestamp(), get_option( 'date_format' ) ) . '</b>'
-			)
+			),
+			false,
+			$lead,
 		);
 		static::format_scan_body( $mail, $scan );
 		$mail->add_footer( false );
@@ -113,46 +152,6 @@ class ITSEC_Site_Scanner_Mail {
 			return;
 		}
 
-		$issues = $scan->count( Status::WARN );
-		$errors = count( $scan->get_errors() );
-
-		$lead = '';
-
-		if ( $issues ) {
-			$lead = sprintf( esc_html(
-				_n(
-					'The scheduled site scan found %1$s issue when scanning %2$s.',
-					'The scheduled site scan found %1$s issues when scanning %2$s.',
-					$issues,
-					'better-wp-security'
-				)
-			), number_format_i18n( $issues ), $scan->get_url() );
-		}
-
-		if ( $errors ) {
-			if ( $lead ) {
-				$lead .= ' ' . sprintf( esc_html(
-						_n(
-							'The scanner encountered %s additional error.',
-							'The scanner encountered %s additional errors.',
-							$errors,
-							'better-wp-security'
-						)
-					), number_format_i18n( $errors ) );
-			} else {
-				$lead = sprintf( esc_html(
-					_n(
-						'The scheduled site scan encountered %1$s error when scanning %2$s.',
-						'The scheduled site scan encountered %1$s errors when scanning %2$s.',
-						$errors,
-						'better-wp-security'
-					)
-				), number_format_i18n( $errors ), $scan->get_url() );
-			}
-		}
-
-		$mail->add_text( $lead );
-
 		$mail->start_group( 'report' );
 
 		foreach ( $scan->get_entries() as $entry ) {
@@ -160,11 +159,33 @@ class ITSEC_Site_Scanner_Mail {
 				continue;
 			}
 
-			$mail->add_section_heading( $entry->get_title() );
-			$mail->add_list( array_map( static function ( Issue $issue ) {
-				return sprintf( '<a href="%s">%s</a>', esc_url( $issue->get_link() ), esc_html( $issue->get_description() ) );
-			}, $entry->get_issues() ) );
+			$mail->add_list( array_reduce( $entry->get_issues(), static function ( array $list, Issue $issue ) {
+				if ( $issue->get_status() !== Status::WARN ) {
+					return $list;
+				}
+
+				if ( $issue instanceof \iThemesSecurity\Site_Scanner\Vulnerability_Issue ) {
+					$item = esc_html( $issue->get_description() ) . '<br>';
+					$item .= '<span style="margin-left: 12px; font-size: 14px;">';
+					$item .= sprintf( '<a href="%s">%s</a>', esc_url( ITSEC_Mail::filter_admin_page_url( $issue->get_link() ) ), esc_attr__( 'Manage Vulnerability', 'better-wp-security' ) );
+
+					$patchstack = $issue->get_meta()['issue']['references'][0]['refs'][0]['link'] ?? '';
+
+					if ( $patchstack ) {
+						$item .= sprintf( ' | <a href="%s">%s</a>', esc_url( $patchstack ), esc_attr__( 'View in Patchstack', 'better-wp-security' ) );
+					}
+					$item .= '</span>';
+				} else {
+					$item = sprintf( '<a href="%s">%s</a>', esc_url( $issue->get_link() ), esc_html( $issue->get_description() ) );
+				}
+
+				$list[] = $item;
+
+				return $list;
+			}, [] ), false, true, $entry->get_title() );
 		}
+
+		$errors = count( $scan->get_errors() );
 
 		if ( $errors ) {
 			$mail->add_section_heading( esc_html__( 'Scan Errors', 'better-wp-security' ) );

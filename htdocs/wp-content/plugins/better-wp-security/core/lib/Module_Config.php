@@ -57,7 +57,7 @@ final class Module_Config {
 		}
 
 		if ( ! $for ) {
-			$for = \ITSEC_Core::is_pro() ? 'pro' : 'free';
+			$for = \ITSEC_Core::get_install_type();
 		}
 
 		return $status[ $for ];
@@ -65,6 +65,14 @@ final class Module_Config {
 
 	public function get_type(): string {
 		return $this->get_config()['type'];
+	}
+
+	public function can_load_early(): bool {
+		return $this->get_load() === 'early';
+	}
+
+	public function get_load(): string {
+		return $this->get_config()['load'] ?? 'normal';
 	}
 
 	public function is_deprecated(): bool {
@@ -133,6 +141,10 @@ final class Module_Config {
 
 	public function get_onboard_settings(): array {
 		return $this->get_config()['onboard-settings'] ?? [];
+	}
+
+	public function get_telemetry_settings(): array {
+		return $this->get_config()['telemetry-settings'] ?? [];
 	}
 
 	public function get_scheduling(): array {
@@ -252,6 +264,10 @@ final class Module_Config {
 
 		if ( $with->get_onboard_settings() ) {
 			$new->config['onboard-settings'] = array_merge( $new->get_onboard_settings(), $with->get_onboard_settings() );
+		}
+
+		if ( $with->get_telemetry_settings() ) {
+			$new->config['telemetry-settings'] = array_merge( $new->get_telemetry_settings(), $with->get_telemetry_settings() );
 		}
 
 		if ( $with->get_scheduling() ) {
