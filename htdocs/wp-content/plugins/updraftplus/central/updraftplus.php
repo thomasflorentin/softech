@@ -39,6 +39,7 @@ class UpdraftPlus_Host extends UpdraftCentral_Host {
 		parent::__construct();
 		
 		add_action('updraftplus_debugtools_dashboard', array($this, 'debugtools_dashboard'), 20);
+		add_action('updraftplus_load_translations_for_udcentral', array($this, 'load_updraftplus_translations'));
 
 		$this->maybe_initialize_required_objects();
 	}
@@ -56,6 +57,15 @@ class UpdraftPlus_Host extends UpdraftCentral_Host {
 		}
 	}
 
+	/**
+	 * Whether the current user can perform key control AJAX actions
+	 *
+	 * @return Boolean
+	 */
+	public function current_user_can_ajax() {
+		return UpdraftPlus_Options::user_can_manage();
+	}
+	
 	/**
 	 * Below are interface methods' implementations that are required by UpdraftCentral to function properly. Please
 	 * see the "interface.php" to check all the required interface methods.
@@ -258,10 +268,15 @@ class UpdraftPlus_Host extends UpdraftCentral_Host {
 				updraft_try_include_file('includes/class-filesystem-functions.php', 'require_once');
 			}
 		}
+	}
 
+	/**
+	 * Load translations which are based on UpdraftPlus domain text
+	 */
+	public function load_updraftplus_translations() {
 		// Load updraftplus translations
 		if (defined('UPDRAFTCENTRAL_CLIENT_DIR') && file_exists(UPDRAFTCENTRAL_CLIENT_DIR.'/translations-central.php')) {
-			$this->translations = include_once(UPDRAFTCENTRAL_CLIENT_DIR.'/translations-central.php');
+			$this->translations = include(UPDRAFTCENTRAL_CLIENT_DIR.'/translations-central.php');
 		}
 	}
 }

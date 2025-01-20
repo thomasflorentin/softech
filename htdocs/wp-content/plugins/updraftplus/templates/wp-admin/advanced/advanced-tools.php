@@ -3,7 +3,7 @@
 ?>
 <div class="expertmode">
 	<p>
-		<em><?php _e('Unless you have a problem, you can completely ignore everything here.', 'updraftplus');?></em>
+		<em><?php esc_html_e('Unless you have a problem, you can completely ignore everything here.', 'updraftplus');?></em>
 	</p>
 	<div class="advanced_settings_container">
 		<div class="advanced_settings_menu">
@@ -19,6 +19,7 @@
 				$updraftplus_admin->include_template('/wp-admin/advanced/updraftcentral.php');
 				$updraftplus_admin->include_template('/wp-admin/advanced/search-replace.php');
 				$updraftplus_admin->include_template('/wp-admin/advanced/total-size.php');
+				$updraftplus_admin->include_template('/wp-admin/advanced/db-size.php');
 				$updraftplus_admin->include_template('/wp-admin/advanced/export-settings.php');
 				$updraftplus_admin->include_template('/wp-admin/advanced/wipe-settings.php');
 			?>
